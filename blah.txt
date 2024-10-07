@@ -1,0 +1,67 @@
+compile {
+
+    PATH = ""
+    CLASSPATH = ""  
+    ENTRYPOINT = "Main"
+    BINARY = "Velocity.jar"  
+
+    
+    if ($(USE_LWJGL)) {
+        CLASSPATH = ".;lib/common/joml-1.10.5.jar;lib/common/lwjgl-glfw.jar;lib/common/lwjgl.jar;lib/common/lwjgl-opengl.jar;lib/common/lwjgl-stb.jar"
+    }
+
+    
+    %useoutdir
+
+    if ($(PLATFORM) == "win") {
+        
+        
+    }
+
+    %purge ".class"  
+    %jcomp $(ARGS) $(CLASSPATH) $(ENTRYPOINT)
+    %log "Printing a message: here's the" $(CLASSPATH)
+
+    
+    %jar unit args  
+    @chdir  
+
+    
+    %link $(BINARY) $(CLASSPATH)
+    %useldrbin  
+    %keepreq  
+}
+clean {
+    %purge ".class"
+}
+
+# ^^^^^^^^^^^ Current parser output.
+
+# I need from the analyzer:
+OP_TYPE_TARGET 'val: compile'
+OP_TYPE_VARSET 'val: PATH = ""'
+OP_TYPE_VARSET 'val: CLASSPATH = ""'
+OP_TYPE_VARSET 'val: ENTRYPOINT = "Main"'
+OP_TYPE_VARSET 'val: BINARY = "Velocity.jar"'
+OP_TYPE_COND 'val: false'  # Note that $(USE_LWJGL) was resolved to 0 since it doesn't exist.
+    OP_TYPE_VARSET 'val: CLASSPATH = ".;lib/common/joml-1.10.5.jar;lib/common/lwjgl-glfw.jar;lib/common/lwjgl.jar;lib/common/lwjgl-opengl.jar;lib/common/lwjgl-stb.jar"'
+OP_TYPE_UNIT_INTERNAL 'val: %useoutdir'
+OP_TYPE_COND 'val: "win" == "win"'  # $(PLATFORM) is an internal jBuilder variable.
+OP_TYPE_UNIT_INTERNAL 'val: purge ".class"'
+OP_TYPE_UNIT_INTERNAL 'val: jcomp 0 .;lib/common/joml-1.10.5.jar;lib/common/lwjgl-glfw.jar;lib/common/lwjgl.jar;lib/common/lwjgl-opengl.jar;lib/common/lwjgl-stb.jar Main'
+OP_TYPE_UNIT_INTERNAL 'val: log "Printing a message: here\'s the" .;lib/common/joml-1.10.5.jar;lib/common/lwjgl-glfw.jar;lib/common/lwjgl.jar;lib/common/lwjgl-opengl.jar;lib/common/lwjgl-stb.jar'
+OP_TYPE_UNIT_INTERNAL 'val: jar unit args'
+OP_TYPE_CMD 'val: chdir'
+OP_TYPE_UNIT_INTERNAL 'val: link Velocity.jar .;lib/common/joml-1.10.5.jar;lib/common/lwjgl-glfw.jar;lib/common/lwjgl.jar;lib/common/lwjgl-opengl.jar;lib/common/lwjgl-stb.jar'
+OP_TYPE_UNIT_INTERNAL 'val: useldrbin'
+OP_TYPE_UNIT_INTERNAL 'val: keepreq'
+OP_TYPE_TARGET 'val: purge'
+OP_TYPE_UNIT_INTERNAL 'val: purge ".class"'
+
+# Parsing rules for each operation:
+OP_TYPE_TARGET: "tokens required: <target name> {"
+OP_TYPE_VARSET: "tokens required: <varname> = <value>"
+OP_TYPE_COND: "tokens required: if (<cond>) {"
+OP_TYPE_VARAPP: "tokens required: <varname> := <value>"
+OP_TYPE_UNIT_INTERNAL: "tokens required: %<unit name>"
+OP_TYPE_CMD: "tokens required: @<cmd>"
