@@ -20,13 +20,18 @@ public class Arguments {
 
         for (String arg : args) {
             // Likely an option. Skip.
-            if (arg.charAt(0) == '-') continue;
-            if (foundTarget != null) throw new IllegalArgumentException("Too many targets specified.");
+            if (arg.charAt(0) == '-') 
+                continue;
+
+            if (foundTarget != null) 
+                throw new IllegalArgumentException("Too many targets specified.");
+
             foundTarget = arg;
         }
         
-        // Must have a valid target to execute.
-        if (foundTarget == null) throw new IllegalArgumentException("Got no target.");
+        // Must have a valid target to build!
+        if (foundTarget == null) 
+            return ""; // No target
 
         return foundTarget;
     }

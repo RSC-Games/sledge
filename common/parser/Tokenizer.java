@@ -25,7 +25,7 @@ public class Tokenizer {
             this.f = new TextFile(fpath, "r");
         }
         catch (IOException ie) {
-            throw new RuntimeException("Failed to locate ./jbuildfile.");
+            throw new RuntimeException("Build failed! No build config (missing ./hammer)");
         }
         populateTable();
     }

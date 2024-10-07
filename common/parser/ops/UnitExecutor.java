@@ -40,6 +40,6 @@ class UnitExecutor extends Operation {
         int retcode = Modules.tryRun(unitName, cmdline);
 
         if (retcode != 0)
-            throw new RuntimeException("Unit " + unitName + ", cmdline \"" + cmdline + "\" (lno " + lineNo + ") failed to execute.");
+            throw new RuntimeException("Unit " + unitName + ", commands \"" + cmdline + "\" (lno " + lineNo + ") failed to execute.");
     }
 }

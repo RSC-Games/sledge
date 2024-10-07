@@ -1,7 +1,5 @@
 package common.parser;
 
-import java.util.ArrayList;
-
 public class Tree {
     TreeNode root;
 

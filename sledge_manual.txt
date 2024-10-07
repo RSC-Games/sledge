@@ -1,9 +1,9 @@
-jBuilder parser file setup:
+sledge parser file setup:
 
 Allow -D for specifying parameters
-Command line: jbuilder <target> -Duse_lwjgl=true --javac_debug
+Command line: jbuilder <target> --DUSE_LWJGL=true --javac_debug
 
-jbuildfile 
+hammer: 
 compile {
     # Code goes here.
     PATH = ""  # Variable set
@@ -48,9 +48,9 @@ if (<cond>) {} Only executes if the condition values to true or false.
 # ... Comment
 %cmd Built-in units
 @unit.jar External JAR unit to link in and execute
-@chdir command line code.
+@chdir command line code. (deprecated)
 
-Built-in vars
-PLATFORM holds the current platform.
-ARCHITECTURE holds the cpu architecture.
-CPU_COUNT holds the core count.
+Built-in vars:
+PLATFORM: the current os.
+ARCHITECTURE: the host cpu architecture.
+CPU_COUNT: the host core count.

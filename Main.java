@@ -1,46 +1,64 @@
+/**
+ * Copyright 2024 RSC Games, Raine Bond
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import util.*;
-import java.io.IOException;
 
 import modules.Modules;
-import modules.wizard.*;
 
 import common.Environ;
+
+import java.net.URISyntaxException;
+
 import common.Arguments;
 import common.VariableState;
 import common.parser.BuildConfig;
-//import common.*;
+
 
 public class Main {
-    static final Version VERSION = new Version(2, 0, 0, 15);
+    static final Version VERSION = new Version(3, 0, 0, 0);
     static final int ARGS_SZ = 9;
 
-    public static void main(String[] args) {
-        Output.log("main", "jBuilder Copyright 2024 RSC Games. All rights reserved.");
-        Output.log("main", "jBuilder binary v" + VERSION);
-        Input.init();
+    public static void main(String[] args) throws URISyntaxException {
+        Output.log("main", "sledge binary v" + VERSION);
+        Output.log("main", "sledge is licensed under the Apache 2.0 License.");
 
-        /*
-        // User needs the interactive setup module for generating the build script.
-        if (!builderRunWithArgs(args)) {
-            Output.log("main", "jbuilder was run without arguments. Preparing interactive wizard...");
-            Wizard.main();
-        }
-        */
-        Output.warn("main", "jBuilder interactive wizard is not implemented.");
+        // TODO: Load sledge config from .config/sledge/sledge.conf
+        // This contains the java binary path and other configs.
+        String javaPath = "";
 
-        // Load the jBuilder .ini code eventually
         // Set up and initialize jBuilder's module system.
-        String jdkpath = "C:\\Program Files (x86)\\jGRASP\\bundled\\java\\bin";
-        Environ env = new Environ(System.getProperty("user.dir"), jdkpath);
+        //String jdkpath = "C:\\Program Files (x86)\\jGRASP\\bundled\\java\\bin";
+        Environ env = new Environ(System.getProperty("user.dir"), javaPath);
         Modules.setOperatingEnvironment(env);
-        VariableState.init();
 
-        // Parse the supplied arguments.
-        Arguments pargs = new Arguments(args);
-        String target = pargs.getTarget();
-        VariableState.addVars(pargs.getOptions());
+        BuildConfig cfg = new BuildConfig("./hammer");  // Yes like make. Get over it.
 
-        BuildConfig cfg = new BuildConfig("./jbuildfile");  // Yes like make. Get over it.
+        // Determine the build target and compile options.
+        Arguments parsed_args = new Arguments(args);
+        String target = parsed_args.getTarget();
+
+        // Ensure there's a target to build for.
+        if (target.equals("")) {
+            Output.error("main", "No target specified.");
+            cfg.listTargets();
+            System.exit(1);
+        }
+
+        // Build the project.
+        VariableState.addVars(parsed_args.getOptions());
         cfg.printTarget(target);
         cfg.getExecutableTree().execTarget(target); 
 

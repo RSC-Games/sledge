@@ -2,6 +2,8 @@ package common.parser;
 
 import java.util.ArrayList;
 
+import util.Output;
+
 public class BuildConfig {
     ExecTree tree;
 
@@ -30,5 +32,15 @@ public class BuildConfig {
     
     public void printTarget(String target) {
         this.tree.printTree(target);
+    }
+
+    /**
+     * Print out the list of identified targets.
+     */
+    public void listTargets() {
+        Output.warn("sledge", "Registered targets:");
+
+        for (String target : this.tree.targets.keySet())
+            Output.warn("sledge", "\t" + target);
     }
 }

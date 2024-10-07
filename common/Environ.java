@@ -1,15 +1,21 @@
 package common;
 
+import java.io.File;
+import java.net.URISyntaxException;
+
 // Workaround for lack of current working directory support in pure Java.
 public class Environ {
     String cwd;
-    public final String jdkpath;
-    public final String projPath;
+    public final String javaPath;
+    public final String srcPath;
+    public final String sledgePath;
 
-    public Environ(String cwd, String jdkpath) {
+    public Environ(String cwd, String javaPath) throws URISyntaxException{
         this.cwd = cwd;
-        this.jdkpath = jdkpath;
-        this.projPath = cwd;
+        this.javaPath = javaPath;
+        this.srcPath = cwd;
+        this.sledgePath = new File(Environ.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString();
+        System.out.println(sledgePath);
     }
 
     public void chdir(String newS) {
@@ -20,8 +26,8 @@ public class Environ {
         this.cwd = path;
     }
     
-    public String getJDKPath() {
-        return this.jdkpath;
+    public String getJavaPath() {
+        return this.javaPath;
     }
 
     public Path getPath() {

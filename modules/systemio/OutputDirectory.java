@@ -7,7 +7,9 @@ import common.Environ;
 import util.Output;
 
 public class OutputDirectory {
+    @Deprecated
     public static void genOutDir(Environ env) {
+        Output.warn("useoutdir", "Deprecated and will be removed in first sledge release!");
         String buildDir = env.getcwd() + "_build";
         env.setdir(buildDir);
 
@@ -24,7 +26,7 @@ public class OutputDirectory {
         Path destDir = new Path(env);
         
         try {
-            destDir.copyFrom(env.projPath);
+            destDir.copyFrom(env.srcPath);
         }
         catch (IOException ie) {
             ie.printStackTrace();

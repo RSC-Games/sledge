@@ -38,7 +38,7 @@ public class ExecTree {
     }
 
     public void printTree(String target) {
-        System.out.println("***************** EXECUTABLE TREE ******************");
+        System.out.println("\n***************** EXECUTABLE TREE ******************");
         targets.get(target).printTree();
         System.out.println("******************** END TREE **********************\n");
     }

@@ -26,9 +26,9 @@ public class VariableState {
     }
 
     /**
-     * Populate jBuilder's built-in variables.
+     * Populate sledge's built-in variables.
      */
-    public static void init() {
+    static {
         vars.put("PLATFORM", getOSType());
         vars.put("ARCHITECTURE", System.getProperty("os.arch"));
     }
@@ -41,6 +41,8 @@ public class VariableState {
                 return "win";
             case "Windows 10":
                 return "win";
+            case "Linux":
+                return "linux";
             default:
                 throw new UnsupportedOperationException("Cannot identify OS " + os);
         }

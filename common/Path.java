@@ -5,6 +5,8 @@ import java.nio.file.*;
 import java.io.*;
 import java.util.ArrayList;
 
+// TODO: Use java nio to do this.
+@Deprecated
 public class Path {
     String p;
 

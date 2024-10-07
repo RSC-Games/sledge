@@ -6,11 +6,11 @@ public class Output {
     }
 
     public static void log(String file, String message) {
-        System.out.println("[JLOG]: " + file + ": " + message);
+        System.out.println("[SLOG]: " + file + ": " + message);
     }
 
     public static void log(String file, String message, boolean addnewline) {
-        System.out.print("[JLOG]: " + file + ": " + message + (addnewline ? "\n" : ""));
+        System.out.print("[SLOG]: " + file + ": " + message + (addnewline ? "\n" : ""));
     }
     
     public static void warn(String file, String message) {
