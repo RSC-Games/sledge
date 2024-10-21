@@ -197,7 +197,13 @@ public class JavaCompileSystem {
     }
     
     static String reparseClassPath(String cp) {
-        String[] splitargs = cp.split(";");
+        String[] splitargs = null;
+        String platform = VariableState.get("PLATFORM");
+
+        if (platform.equals("linux"))
+            splitargs = cp.split(":");
+        else if (platform.equals("win"))
+            splitargs = cp.split(";");
         
         StringWrapper out = new StringWrapper(" ");
         return out.join(splitargs);
