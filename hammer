@@ -36,9 +36,9 @@ compile {
 
     # Do linking stuff. Builds the jarfile by default.
     %mkjar $(BINARY) $(ENTRYPOINT)
-    # %keep  # Keep dist code only.
+    %keep  # Keep dist code only.
     # %linkldr "EN_WRITE_PIPE" # Copies the Java launcher into the directory and rename the current binary bin_resources
-    # %cpsledge $(BINARY)  # Copies this build on top of the old jbuilder version. Not to be used lightly.
+    %cpsledge $(BINARY)  # Copies this build on top of the old jbuilder version. Not to be used lightly.
 }
 clean {
     # Clean all of those stupid stale .class files that make jgrasp compilation a pain in the butt.

@@ -82,17 +82,17 @@ public class JavaCompileSystem {
                 // Speedup: Skip java files with an associated .class file that has been already built.
                 String className = fname.substring(0, fname.lastIndexOf(".")) + ".class";
                 if (new File(className).exists()) {
-                    Output.log("javac_lib", "Skipping object file ("  + builtFiles + "/" + srcCount
+                    Output.log("javac_lib", "Skipping Java object file ("  + builtFiles + "/" + srcCount
                                + ") File path: ..." + fname.substring(Math.max(fname.length() - 48, 0)));
                     builtFiles++;
                     continue;
                 }
 
                 // Build the object.
-                String cmdline = jdkPath + "/javac -cp " + VariableState.get("CLASSPATH") 
-                                 + " " + fname;
-                //Output.log("jcomplib", "Running Javac " + cmdline);
-                Output.log("jcomplib", "Building Java object file (" + builtFiles + "/" + srcCount 
+                String cmdline = jdkPath + "javac -cp " + VariableState.get("CLASSPATH") 
+                                 + " \"" + fname + "\"";
+                //Output.log("javac_lib", "Running Javac " + cmdline);
+                Output.log("javac_lib", "Building Java object file (" + builtFiles + "/" + srcCount 
                            + ") File path: ..." + fname.substring(Math.max(fname.length() - 48, 0)));
 
                 int ret = execCmd(env, cmdline);
