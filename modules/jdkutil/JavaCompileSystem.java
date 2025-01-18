@@ -44,7 +44,7 @@ public class JavaCompileSystem {
 
         // Query compiler version.
         String javaPath = env.getJavaPath();
-        int code = execCmd(env, javaPath + "/javac -version");
+        int code = execCmd(env, javaPath + "javac -version");
         if (code != 0) return code;
 
         Output.log("javac_lib", "Building library on javac host compiler.");
