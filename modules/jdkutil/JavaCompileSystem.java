@@ -88,9 +88,12 @@ public class JavaCompileSystem {
                     continue;
                 }
 
+                // Only add quotes if the path has spaces.
+                String quotes = fname.indexOf(" ") != -1 ? "\"" : "";
+
                 // Build the object.
                 String cmdline = jdkPath + "javac -cp " + VariableState.get("CLASSPATH") 
-                                 + " \"" + fname + "\"";
+                                 + " " + quotes + fname + quotes;
                 //Output.log("javac_lib", "Running Javac " + cmdline);
                 Output.log("javac_lib", "Building Java object file (" + builtFiles + "/" + srcCount 
                            + ") File path: ..." + fname.substring(Math.max(fname.length() - 48, 0)));

@@ -28,7 +28,7 @@ import common.parser.BuildConfig;
 
 
 public class Main {
-    static final Version VERSION = new Version(3, 0, 0, 2);
+    static final Version VERSION = new Version(3, 0, 0, 3);
     static final int ARGS_SZ = 9;
 
     public static void main(String[] args) throws URISyntaxException {
