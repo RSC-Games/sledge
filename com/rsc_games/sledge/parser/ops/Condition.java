@@ -1,4 +1,4 @@
-package common.parser.ops;
+package com.rsc_games.sledge.parser.ops;
 
 import java.util.ArrayList;
 
@@ -34,12 +34,11 @@ class Condition extends Operation {
      */
     public void execute() {
         assert this.conditionalElements != null: "Inner operations never set for target!";
-        //System.out.println("Executing operation " + lineNo);
 
-        if (!args.get(0).evaluate()) return;
+        if (!args.get(0).evaluate())
+            return;
 
-        for (Operation op : conditionalElements) {
+        for (Operation op : conditionalElements)
             op.execute();
-        }
     }
 }

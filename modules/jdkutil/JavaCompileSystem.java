@@ -2,11 +2,12 @@ package modules.jdkutil;
 
 import java.io.IOException;
 import java.util.Map;
+
+import com.rsc_games.sledge.lib.LogModule;
+
 import java.io.File;
-import util.StringWrapper;
 import util.ProcessIO;
 import util.TextFile;
-import util.Output;
 import common.VariableState;
 import common.Environ;
 import common.Common;
@@ -14,14 +15,14 @@ import common.Path;
 
 public class JavaCompileSystem {
     public static int build(Environ env, int version, String args) {
-        Output.log("javac", "Found JDK: ", false); // Don't add a terminating newline.
+        LogModule.log("javac", "Found JDK: ", false); // Don't add a terminating newline.
 
         // Query compiler version.
         String javaPath = env.getJavaPath();
         int code = execCmd(env, javaPath + "javac -version");
         if (code != 0) return code;
 
-        Output.log("javac", "Building application on javac host compiler.");
+        LogModule.log("javac", "Building application on javac host compiler.");
 
         // Build the application code.
         // TODO: FORMER JCOMP V8 IS A SLOPPY SOLUTION TO A PRACTICAL PROBLEM!
@@ -29,31 +30,31 @@ public class JavaCompileSystem {
             // Currently a workaround for school pcs. Since it's not maintainable, it will
             // eventually be discarded. For general compilation, use jcomp, not jcompv8.
             String rtpath = "C:\\Program Files (x86)\\Java\\jre1.8.0_311\\lib\\rt.jar";
-            //Output.log("jcomp", "Running Javac " + jdkPath + "/javac -source 8 -target 8 -bootclasspath \""
+            //LogModule.log("jcomp", "Running Javac " + jdkPath + "/javac -source 8 -target 8 -bootclasspath \""
             //           + rtpath + "\" " + args);
             return execCmd(env, javaPath + "javac -source 8 -target 8 -bootclasspath \""
                            + rtpath + "\" " + args);
         }
 
-        //Output.log("jcomp", "Running Javac " + jdkPath + "/javac " + args);
+        //LogModule.log("jcomp", "Running Javac " + jdkPath + "/javac " + args);
         return execCmd(env, javaPath + "javac " + args);
     }
 
     public static int buildLib(Environ env, String args) {
-        Output.log("javac_lib", "Found JDK: ", false); // Don't add a terminating newline.
+        LogModule.log("javac_lib", "Found JDK: ", false); // Don't add a terminating newline.
 
         // Query compiler version.
         String javaPath = env.getJavaPath();
         int code = execCmd(env, javaPath + "javac -version");
         if (code != 0) return code;
 
-        Output.log("javac_lib", "Building library on javac host compiler.");
+        LogModule.log("javac_lib", "Building library on javac host compiler.");
 
         // Build EVERY SINGLE SOURCE FILE IN THE FOLDER!
         File cwd = new File(env.getcwd());
 
         srcCount = env.getPath().enumFiles(".java");
-        Output.log("javac_lib", "Compiling " + srcCount + " source files...");
+        LogModule.log("javac_lib", "Compiling " + srcCount + " source files...");
         builtFiles = 1;
 
         try {
@@ -82,7 +83,7 @@ public class JavaCompileSystem {
                 // Speedup: Skip java files with an associated .class file that has been already built.
                 String className = fname.substring(0, fname.lastIndexOf(".")) + ".class";
                 if (new File(className).exists()) {
-                    Output.log("javac_lib", "Skipping Java object file ("  + builtFiles + "/" + srcCount
+                    LogModule.log("javac_lib", "Skipping Java object file ("  + builtFiles + "/" + srcCount
                                + ") File path: ..." + fname.substring(Math.max(fname.length() - 48, 0)));
                     builtFiles++;
                     continue;
@@ -94,8 +95,8 @@ public class JavaCompileSystem {
                 // Build the object.
                 String cmdline = jdkPath + "javac -cp " + VariableState.get("CLASSPATH") 
                                  + " " + quotes + fname + quotes;
-                //Output.log("javac_lib", "Running Javac " + cmdline);
-                Output.log("javac_lib", "Building Java object file (" + builtFiles + "/" + srcCount 
+                //LogModule.log("javac_lib", "Running Javac " + cmdline);
+                LogModule.log("javac_lib", "Building Java object file (" + builtFiles + "/" + srcCount 
                            + ") File path: ..." + fname.substring(Math.max(fname.length() - 48, 0)));
 
                 int ret = execCmd(env, cmdline);
@@ -109,7 +110,7 @@ public class JavaCompileSystem {
 
     // TODO: Stop using varstate to extract the classpath.
     public static int link(Environ env, String args) {
-        Output.log("link", "Generating output binary with provided JAVAC JAR util.");
+        LogModule.log("link", "Generating LogModule binary with provided JAVAC JAR util.");
 
         // Generate manifest from the current CLASSPATH var.
         String cp = VariableState.get("CLASSPATH");
@@ -134,7 +135,7 @@ public class JavaCompileSystem {
         String jdkpath = env.getJavaPath();
         String cmdline = "jar --create --file " + argsArr[0] + " --manifest gen_mf.txt .";
 
-        Output.log("link", "Using cmdline " + jdkpath + cmdline);
+        LogModule.log("link", "Using cmdline " + jdkpath + cmdline);
         int code = execCmd(env, jdkpath + cmdline);
         
         // TODO: Remove gen_mf.txt
@@ -144,7 +145,7 @@ public class JavaCompileSystem {
     // NOT IMPLEMENTED!!!!!!!!!!!!!
     public static int injectLoader(Environ env, String args) {
         // If using the launcher, generate the launcher config 
-        Output.log("linkldr", "Linking loader code...");
+        LogModule.log("linkldr", "Linking loader code...");
 
         // Link the binary and the loader code.
         String binName = VariableState.get("BINARY");
@@ -160,7 +161,7 @@ public class JavaCompileSystem {
         }
         catch (IOException ie) {
             ie.printStackTrace();
-            Output.critical("linkldr", "Failed to inject loader binary!");
+            LogModule.critical("linkldr", "Failed to inject loader binary!");
             return 1;
         }
 
@@ -174,7 +175,7 @@ public class JavaCompileSystem {
         }
         catch (IOException ie) {
             ie.printStackTrace();
-            Output.critical("linkldr", "Failed to generate args file.");
+            LogModule.critical("linkldr", "Failed to generate args file.");
             return 2;
         }
 
@@ -187,7 +188,7 @@ public class JavaCompileSystem {
         }
         catch (IOException ie) {
             ie.printStackTrace();
-            Output.warn("main", "Could not generate console launch args for app! Skipping...");
+            LogModule.warn("main", "Could not generate console launch args for app! Skipping...");
         }
         
         return 0;
@@ -208,8 +209,7 @@ public class JavaCompileSystem {
         else if (platform.equals("win"))
             splitargs = cp.split(";");
         
-        StringWrapper out = new StringWrapper(" ");
-        return out.join(splitargs);
+        return String.join(" ", splitargs);
     }
 
     static int execCmd(Environ env, String cmd) {

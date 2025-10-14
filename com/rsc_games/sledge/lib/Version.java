@@ -1,4 +1,4 @@
-package util;
+package com.rsc_games.sledge.lib;
 
 public class Version {
     static final Version invalid = new Version(0, 0, 0, 0);
@@ -65,6 +65,6 @@ public class Version {
     }
 
     public String toString() {
-        return v + "." + major + "." + minor + "." + patch;
+        return "v" + v + "." + major + "." + minor + "." + patch;
     }
 }

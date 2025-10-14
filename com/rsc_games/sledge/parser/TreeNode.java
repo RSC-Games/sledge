@@ -1,36 +1,69 @@
-package common.parser;
+package com.rsc_games.sledge.parser;
 
 import java.util.ArrayList;
-import common.parser.ops.Operation;
 
+import com.rsc_games.sledge.parser.ops.Operation;
+
+/**
+ * Evil twin of the codeline system. Recursively holds child codelines, which can
+ * have their own children, etc.
+ */
 class TreeNode {
-    // Chain these calls to create codelines and a tree of a bunch of
-    // found elements.
+    /**
+     * Current indentation level of the tree (probably for debugging purposes)
+     */
     static int indent = -1;
+
+    /**
+     * Codeline directly associated with this tree node. Necessary
+     * for code generation.
+     */
     CodeLine line;
+
+    /**
+     * All of the aforementioned child nodes.
+     */
     ArrayList<CodeLine> childLines = new ArrayList<CodeLine>();
 
+    /**
+     * Prepare this node for CST generation.
+     * 
+     * @param parentLine Technically the associated line (not much of a parent)
+     */
     public TreeNode(CodeLine parentLine) {
         this.line = parentLine;
     }
 
+    /**
+     * CST operation. Register another child line.
+     * @param line
+     */
     public void addLine(CodeLine line) {
         this.childLines.add(line);
     }
 
+    /**
+     * Get a list of this tree's direct children (via the codeline system)
+     * @implNote This function does not recurse over the child trees.
+     * 
+     * @return A list of this tree's children.
+     */
     public ArrayList<TreeNode> getSubTrees() {
         ArrayList<TreeNode> nodes = new ArrayList<TreeNode>();
 
         for (CodeLine line : this.childLines) {
             TreeNode node = line.getTreeNode();
-            if (node != null) nodes.add(node);
+
+            if (node != null) 
+                nodes.add(node);
         }
 
         return nodes;
     }
 
     /**
-     * Convert this current node to a recursive executable tree.
+     * AST operation. Recursively compile executable operations and build
+     * a finally "executable" tree.
      */
     public ExecTreeNode toExecTree() {
         ExecTreeNode node = new ExecTreeNode(line.extractOp());
@@ -44,29 +77,15 @@ class TreeNode {
     }
 
     /**
-     * Generally the target directive will be the first line of the
-     * root trees.
+     * AST operation. First line of a direct subtree contains the target name.
+     * Should never be called on any indirect child.
      */
     public CodeLine getTarget() {
         return this.childLines.get(0);
     }
 
     /**
-     * Generate the inner values for operation.
-     */
-    public ArrayList<Operation> generateInner() {
-        ArrayList<Operation> inner = new ArrayList<Operation>();
-
-        for (CodeLine cline : childLines) {
-            Operation op = cline.generateInner();
-            inner.add(op);
-        }
-        
-        return inner;
-    }
-
-    /**
-     * Purge all whitespace on this current node and subnodes.
+     * AST operation. Purge all whitespace on this current node and subnodes.
      */
     public void clean() { 
         ArrayList<CodeLine> lines = this.childLines;
@@ -80,11 +99,28 @@ class TreeNode {
         }
     }
 
+    /**
+     * AST operation. The bulk of the code generation work occurs here.
+     */
     public void analyze() {
         // Tell each codeline to analyze itself.
         for (CodeLine cline : this.childLines) {
             cline.analyze();
         }
+    }
+    
+    /**
+     * AST operation. Generate the inner values for operation.
+     */
+    public ArrayList<Operation> generateInner() {
+        ArrayList<Operation> inner = new ArrayList<Operation>();
+
+        for (CodeLine cline : childLines) {
+            Operation op = cline.generateInner();
+            inner.add(op);
+        }
+        
+        return inner;
     }
 
     public String toString() {

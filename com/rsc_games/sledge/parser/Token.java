@@ -1,4 +1,4 @@
-package common.parser;
+package com.rsc_games.sledge.parser;
 
 public class Token {
     public final TokenID tok;
@@ -12,7 +12,7 @@ public class Token {
     }
 
     public String toString() {
-        return tok + (tok != TokenID.TOK_LINE_TERM ? " of value " + val : "") 
+        return tok + (tok != TokenID.TOK_NEWLINE ? " of value " + val : "") 
             + " on lno " + lno;
     }
 }

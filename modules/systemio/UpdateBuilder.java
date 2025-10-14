@@ -1,13 +1,15 @@
 package modules.systemio;
 
 import java.io.IOException;
+
+import com.rsc_games.sledge.lib.LogModule;
+
 import common.Environ;
 import common.Path;
-import util.Output;
 
 public class UpdateBuilder {
     public static void copyTo(Environ env, String args) {
-        Output.log("cpjbuild", "Overwriting jBuilder binary with newly generated binary.");
+        LogModule.log("cpjbuild", "Overwriting jBuilder binary with newly generated binary.");
         Path output = new Path(env.getcwd() + "/" + args);
 
         try {
@@ -15,7 +17,7 @@ public class UpdateBuilder {
         }
         catch (IOException ie) {
             ie.printStackTrace();
-            Output.warn("cpjbuild", "Could not copy file. Skipping...");
+            LogModule.warn("cpjbuild", "Could not copy file. Skipping...");
         }
     }
 }

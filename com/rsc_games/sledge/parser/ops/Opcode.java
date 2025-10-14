@@ -1,4 +1,4 @@
-package common.parser.ops;
+package com.rsc_games.sledge.parser.ops;
 
 public enum Opcode {
     OP_TYPE_TARGET,

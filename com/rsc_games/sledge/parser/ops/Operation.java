@@ -1,8 +1,10 @@
-package common.parser.ops;
+package com.rsc_games.sledge.parser.ops;
 
 import java.util.ArrayList;
-import common.parser.Token;
-import common.parser.TokenID;
+
+import com.rsc_games.sledge.parser.ProcessingException;
+import com.rsc_games.sledge.parser.Token;
+import com.rsc_games.sledge.parser.TokenID;
 
 public abstract class Operation {
     public final Opcode op;
@@ -19,6 +21,10 @@ public abstract class Operation {
 
     public Argument getArgument(int i) {
         return this.args.get(i);
+    }
+
+    public int getLineNumber() {
+        return this.lineNo;
     }
 
     /**
@@ -81,7 +87,7 @@ public abstract class Operation {
         else if (isCmd(line, out))
             return new ExternalCmd(Opcode.OP_TYPE_CMD, out);
 
-        throw new RuntimeException("Failed to parse line. Tokens: " + line);
+        throw new ProcessingException(line.get(0).lno, "processing error: unrecognized optype");
     }
 
     /**
@@ -101,7 +107,8 @@ public abstract class Operation {
     private static boolean isCondition(ArrayList<Token> line, ArrayList<Argument> out) {
         Token keyword = line.get(0);
         // line arg 1 should be a (. If it's not, then that's invalid syntax.
-        ArrayList<Token> arg = new ArrayList<Token>();
+        //ArrayList<Token> arg = new ArrayList<Token>();
+        //System.out.println("\n" + line + "\n");
         Token term = line.get(line.size() - 1);
 
         if (keyword.tok == TokenID.TOK_NAME && keyword.val.equals("if") && line.get(1).tok == TokenID.TOK_PAREN_OPEN

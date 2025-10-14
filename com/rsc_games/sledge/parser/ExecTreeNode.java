@@ -1,8 +1,9 @@
-package common.parser;
+package com.rsc_games.sledge.parser;
 
-import common.parser.ops.Operation;
-import common.parser.ops.Opcode;
 import java.util.ArrayList;
+
+import com.rsc_games.sledge.parser.ops.Opcode;
+import com.rsc_games.sledge.parser.ops.Operation;
 
 public class ExecTreeNode {
     ArrayList<Operation> operations;
@@ -10,7 +11,7 @@ public class ExecTreeNode {
 
     public ExecTreeNode(Operation base) {
         if (base.op != Opcode.OP_TYPE_TARGET)
-            throw new RuntimeException("Treenode op must be a target!");
+            throw new ProcessingException(base.getLineNumber(), "processing error: expected target type for tree root, got " + base.op);
 
         name = base.getArgument(0).stringVal();
         operations = new ArrayList<Operation>();

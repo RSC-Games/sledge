@@ -1,15 +1,21 @@
-package common.parser.ops;
+package com.rsc_games.sledge.parser.ops;
 
 import common.VariableState;
+import modules.Modules;
 import java.util.ArrayList;
 
-class VariableSet extends Operation {
+import com.rsc_games.sledge.parser.ProcessingException;
+
+class UnitExecutor extends Operation {
+    String unitName;
+
     /**
      * Represents a target operation. A target contains a list of inner operations
      * and runs them when {@code execute} is called. A Target must never be nested.
      */
-    public VariableSet(Opcode op, ArrayList<Argument> args) {
+    public UnitExecutor(Opcode op, ArrayList<Argument> args) {
         super(op, args);
+        this.unitName = args.get(0).stringVal();
     }
 
     /**
@@ -27,11 +33,15 @@ class VariableSet extends Operation {
     /**
      * Execute all operations further down in the tree.
      * Provided args in the list:
-     * args[0]: The variable name
-     * args[1]: The variable data to append.
+     * args[0]: Operation
+     * args[1]: Arguments to pass in.
      */
     public void execute() {
+        String cmdline = args.get(1).stringVal();
         //System.out.println("Executing operation " + lineNo);
-        VariableState.set(args.get(0).stringVal(), args.get(1).stringVal());
+        int retcode = Modules.tryRun(unitName, cmdline);
+
+        if (retcode != 0)
+            throw new ProcessingException(lineNo, "failed to run unit: " + unitName + " " + cmdline);
     }
 }

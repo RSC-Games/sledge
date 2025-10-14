@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Scanner;
+
+import com.rsc_games.sledge.lib.LogModule;
+
 import java.util.NoSuchElementException;
 
 // Really just a wrapper for I/O between classes. Ideally should be an object but
@@ -33,7 +36,7 @@ public class ProcessIO {
                         }
                     }
                     catch (IOException ie) {
-                        Output.log("read", "Application died unexpectedly.");
+                        LogModule.log("read", "Application died unexpectedly.");
                         try {
                             input.close();
                             error.close();
@@ -42,7 +45,7 @@ public class ProcessIO {
                         return;
                     }
                 }
-                //Output.log("read", "Pipe closed.");
+                //LogModule.log("read", "Pipe closed.");
             }
         }.start();
     }

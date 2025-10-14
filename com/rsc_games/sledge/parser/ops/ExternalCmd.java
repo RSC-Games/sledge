@@ -1,8 +1,10 @@
-package common.parser.ops;
+package com.rsc_games.sledge.parser.ops;
 
 import common.VariableState;
 import modules.Modules;
 import java.util.ArrayList;
+
+import com.rsc_games.sledge.parser.ProcessingException;
 
 class ExternalCmd extends Operation {
     String cmd;
@@ -40,6 +42,6 @@ class ExternalCmd extends Operation {
         int retcode = Modules.execCmd(cmd, cmdline);
 
         if (retcode != 0)
-            throw new RuntimeException("Command " + cmd + ", cmdline " + cmdline + " failed to execute.");
+            throw new ProcessingException(lineNo, "failed to run external cmd: " + cmd + " " + cmdline);
     }
 }

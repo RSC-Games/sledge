@@ -1,37 +1,42 @@
-package common.parser.ops;
+package com.rsc_games.sledge.parser.ops;
 
-import common.VariableState;
 import java.util.ArrayList;
 
-class VariableAppend extends Operation {
+class Target extends Operation {
+    ArrayList<Operation> inner;
+    String name;
+
     /**
      * Represents a target operation. A target contains a list of inner operations
      * and runs them when {@code execute} is called. A Target must never be nested.
      */
-    public VariableAppend(Opcode op, ArrayList<Argument> args) {
+    public Target(Opcode op, ArrayList<Argument> args) {
         super(op, args);
+        this.name = args.get(0).stringVal();
     }
-
+    
     /**
      * Allow different operations on branches.
      */
     public boolean isBranch() {
-        return false;
+        return true;
     }
 
     /**
      * Set the inner operations of this operation.
      */
-    public void setInner(ArrayList<Operation> inner) {}
+    public void setInner(ArrayList<Operation> inner) {
+        this.inner = inner;
+    }
 
     /**
      * Execute all operations further down in the tree.
-     * Provided args in the list:
-     * args[0]: The variable name
-     * args[1]: The variable data to append.
      */
     public void execute() {
-        //System.out.println("Executing operation " + lineNo);
-        VariableState.append(args.get(0).stringVal(), args.get(1).stringVal());
+        assert this.inner != null: "Inner operations never set for target!";
+
+        for (Operation op : inner) {
+            op.execute();
+        }
     }
 }

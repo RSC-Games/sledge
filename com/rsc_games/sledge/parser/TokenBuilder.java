@@ -1,4 +1,4 @@
-package common.parser;
+package com.rsc_games.sledge.parser;
 
 class TokenBuilder {
     public TokenID id;

@@ -1,8 +1,13 @@
-package common.parser;
+package com.rsc_games.sledge.parser;
 
 public class ASTGenerator {
     Tree builtTree;
 
+    /**
+     * If the CST generator technically wasn't a CST, this is ten times worse.
+     * This is about as much like an AST as I am a professional composer.
+     * @param tree
+     */
     public ASTGenerator(Tree tree) {
         this.builtTree = tree;
     }
@@ -24,6 +29,11 @@ public class ASTGenerator {
         root.analyze();
     }
     
+    /**
+     * Final processing step. Builds the executable tree code.
+     * 
+     * @return The built tree.
+     */
     public ExecTree buildExec() {
         return new ExecTree(builtTree);
     }

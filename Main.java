@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-import util.*;
-
 import modules.Modules;
 
 import common.Environ;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 
-import common.Arguments;
+import com.rsc_games.sledge.cli.Arguments;
+import com.rsc_games.sledge.lib.LogModule;
+import com.rsc_games.sledge.lib.Version;
+import com.rsc_games.sledge.parser.TargetTree;
+
 import common.VariableState;
-import common.parser.BuildConfig;
 
 
 public class Main {
     static final Version VERSION = new Version(3, 0, 0, 3);
     static final int ARGS_SZ = 9;
 
-    public static void main(String[] args) throws URISyntaxException {
-        Output.log("main", "sledge binary v" + VERSION);
-        Output.log("main", "sledge is licensed under the Apache 2.0 License.");
+    public static void main(String[] args) throws URISyntaxException, IOException {
+        LogModule.log("main", "sledge binary v" + VERSION);
+        LogModule.log("main", "sledge is licensed under the Apache 2.0 License.");
 
         // TODO: Load sledge config from .config/sledge/sledge.conf
         // This contains the java binary path and other configs.
@@ -44,7 +46,7 @@ public class Main {
         Environ env = new Environ(System.getProperty("user.dir"), javaPath);
         Modules.setOperatingEnvironment(env);
 
-        BuildConfig cfg = new BuildConfig("./hammer");  // Yes like make. Get over it.
+        TargetTree cfg = new TargetTree("./hammer");  // Yes like make. Get over it.
 
         // Determine the build target and compile options.
         Arguments parsed_args = new Arguments(args);
@@ -52,7 +54,7 @@ public class Main {
 
         // Ensure there's a target to build for.
         if (target.equals("")) {
-            Output.error("main", "No target specified.");
+            LogModule.error("main", "No target specified.");
             cfg.listTargets();
             System.exit(1);
         }
@@ -62,10 +64,6 @@ public class Main {
         cfg.printTarget(target);
         cfg.getExecutableTree().execTarget(target); 
 
-        Output.info("main", "Compilation successful.");
-    }
-
-    public static boolean builderRunWithArgs(String[] args) {
-        return args.length > 2;
+        LogModule.info("main", "Compilation successful.");
     }
 }

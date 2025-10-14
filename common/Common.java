@@ -1,12 +1,12 @@
 package common;
 
-import util.Output;
+import com.rsc_games.sledge.lib.LogModule;
 
 public class Common {
     public static void fatalError(String message, String module) {
-        Output.critical("build.fail", "FATAL: An error occurred during application build.");
-        Output.error(module, "Error details: " + message);
-        Output.error("build.fail", "Compilation failed.");
+        LogModule.critical("build.fail", "FATAL: An error occurred during application build.");
+        LogModule.error(module, "Error details: " + message);
+        LogModule.error("build.fail", "Compilation failed.");
         System.exit(1);
     }
 

@@ -1,15 +1,17 @@
 package modules.systemio;
 
 import java.io.IOException;
+
+import com.rsc_games.sledge.lib.LogModule;
+
 import java.io.File;
 import common.Path;
 import common.Environ;
-import util.Output;
 
 public class OutputDirectory {
     @Deprecated
     public static void genOutDir(Environ env) {
-        Output.warn("useoutdir", "Deprecated and will be removed in first sledge release!");
+        LogModule.warn("useoutdir", "Deprecated and will be removed in first sledge release!");
         String buildDir = env.getcwd() + "_build";
         env.setdir(buildDir);
 
@@ -17,12 +19,12 @@ public class OutputDirectory {
         File oldBuild = new File(buildDir);
 
         if (oldBuild.exists()) {
-            Output.log("outdir", "Purging old build directory: (" + buildDir + ")");
+            LogModule.log("outdir", "Purging old build directory: (" + buildDir + ")");
             Path bdir = new Path(env);
             bdir.recursiveDelete();
         }
 
-        Output.log("outdir", "Making new build directory " + buildDir);
+        LogModule.log("outdir", "Making new build directory " + buildDir);
         Path destDir = new Path(env);
         
         try {
@@ -30,12 +32,12 @@ public class OutputDirectory {
         }
         catch (IOException ie) {
             ie.printStackTrace();
-            Output.critical("useoutdir", "Unit failed!");
-            Output.error("jBuilder", "Compilation terminated.");
+            LogModule.critical("useoutdir", "Unit failed!");
+            LogModule.error("jBuilder", "Compilation terminated.");
             System.exit(1);
         }
 
-        Output.log("outdir", "Created build directory successfully.");
+        LogModule.log("outdir", "Created build directory successfully.");
     }
 
 /*
@@ -47,12 +49,12 @@ public class OutputDirectory {
         File folder = new File(buildDir);
         if (folder.exists()) {
             // Erase the build directory if present. 
-            Output.log("codegen", "Auto-purging build directory. (" + buildDir + ")");
+            LogModule.log("codegen", "Auto-purging build directory. (" + buildDir + ")");
             Path p = new Path(new Environ(buildDir));
             p.recursiveDelete();
         }
 
-        Output.log("codegen", "Copying files to build directory (" + buildDir + ").");
+        LogModule.log("codegen", "Copying files to build directory (" + buildDir + ").");
 
         try {
             ProcessIO.init();
@@ -64,7 +66,7 @@ public class OutputDirectory {
             ProcessIO.stopReadPipe();
 
             if (r != 0) {
-                Output.critical("codegen", "xcopy unit run failure.");
+                LogModule.critical("codegen", "xcopy unit run failure.");
                 Common.fatalError("External unit failed", "codegen");
             }
 
@@ -74,17 +76,17 @@ public class OutputDirectory {
         }
         catch (FileNotFoundException ie) {
             ie.printStackTrace();
-            Output.critical("codegen", "Required files not found.");
+            LogModule.critical("codegen", "Required files not found.");
             Common.fatalError("External unit not found", "codegen");
         }
         catch (IOException ie) {
             ie.printStackTrace();
-            Output.critical("codegen", "Copy operations failed.");
+            LogModule.critical("codegen", "Copy operations failed.");
             Common.fatalError("External unit failed", "codegen");
         }
         catch (InterruptedException ie) {}
 
-        Output.log("codegen.copy_dir", "Build directory copied successfully.");
+        LogModule.log("codegen.copy_dir", "Build directory copied successfully.");
         return buildDir;
     }
 
@@ -99,7 +101,7 @@ public class OutputDirectory {
         );
         String config = ldargs.generate();
         
-        Output.log("launch.cfg", "Generated config: " + config);
+        LogModule.log("launch.cfg", "Generated config: " + config);
 
         // Eventually generate the config and copy the launcher file in.
         TextFile appldr_args;
@@ -113,7 +115,7 @@ public class OutputDirectory {
         }
         catch (IOException ie) {
             ie.printStackTrace();
-            Output.critical("cfg.write", "Access to config file failed.");
+            LogModule.critical("cfg.write", "Access to config file failed.");
             Common.fatalError("Could not write launch config.", "cfg.write");
         }
     }*/
