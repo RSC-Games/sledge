@@ -1,0 +1,60 @@
+compile {
+    # %loadmod "dev"
+
+    # Code goes here.
+    ARGS = "-Xlint:deprecation -Xlint:unchecked -Xdiags:verbose";  # Compiler flags.
+    PATH = "";  # Variable set
+    CLASSPATH = ".";  # Provided classpath
+    MAINFILE = "Main.java";  # Main file for javac code generation.
+    ENTRYPOINT = "Main";  # Code entrypoint
+    BINARY = "jbuilder.jar";  # Deployment binary.
+
+    %warn "No LWJGL support compiled in! \\  \
+        \"hehe I can escape quotes!\"";
+
+    # Undefined symbols will by default evaluate to false.
+    if (USE_LWJGL) {
+        CLASSPATH := ";lib/common/joml-1.10.5.jar;lib/common/lwjgl-glfw.jar;lib/common/lwjgl.jar;lib/common/lwjgl-opengl.jar;lib/common/lwjgl-stb.jar";
+    }
+    elif (0) {
+        # stuff
+    }
+    else {
+    }
+
+    # jBuilder must be asked to explicitly copy the build dir. Once done, it will automatically execute all ops on the new dir.
+    %useoutdir;
+
+    if (PLATFORM == "win") {
+        # link in lwjgl binaries for windows
+        # CLASSPATH := ";some_classpath" # Appends instead of clobbering the value.
+    }
+
+    %purge ".class";  # Erase all the stale class files.
+    %javac "-cp" CLASSPATH ARGS MAINFILE;
+    %purge ".java";  # Clean out the source files.
+    # %log "Printing a message: here's the classpath" $(CLASSPATH)
+
+    # Run a provided unit with cmd or a jar
+    # @jar unit args  # Provided external unit
+    # @chdir  # Cmd
+
+    # Do linking stuff. Builds the jarfile by default.
+    %mkjar BINARY ENTRYPOINT;
+    %keep;  # Keep dist code only.
+    # %linkldr "EN_WRITE_PIPE" # Copies the Java launcher into the directory and rename the current binary bin_resources
+    %cpsledge BINARY;  # Copies this build on top of the old jbuilder version. Not to be used lightly.
+}
+clean {
+    # Clean all of those stupid stale .class files that make jgrasp compilation a pain in the butt.
+    %purge ".class";
+}
+test {
+    if (PLATFORM == "linux") {
+        # link in lwjgl binaries for windows
+        # CLASSPATH := ";some_classpath" # Appends instead of clobbering the value.
+    }
+
+    %register_lib "lwjgl.jar";
+    %log "detected running sledge version" SLEDGE_VERSION SLEDGE_MAJOR SLEDGE_MINOR;
+}
