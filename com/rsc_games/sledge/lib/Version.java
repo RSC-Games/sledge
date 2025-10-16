@@ -2,10 +2,10 @@ package com.rsc_games.sledge.lib;
 
 public class Version {
     static final Version invalid = new Version(0, 0, 0, 0);
-    int v;
-    int major;
-    int minor;
-    int patch;
+    public final int v;
+    public final int major;
+    public final int minor;
+    public final int patch;
 
     public Version(int major, int minor, int patch) {
         this.v = 1;
@@ -22,10 +22,9 @@ public class Version {
     }
 
     public Version(String all) {
-        if (all.length() != 7) {
-            System.out.println("[ldr-ver]: Invalid version code (length != 7)!");
-            return;
-        }
+        if (all.length() != 7)
+            throw new IllegalArgumentException("Invalid version code (length != 7)!");
+
         this.v = Integer.parseInt(all.substring(0, 1));
         this.major = Integer.parseInt(all.substring(1, 3));
         this.minor = Integer.parseInt(all.substring(3, 5));

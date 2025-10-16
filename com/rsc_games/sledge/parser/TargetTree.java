@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 
+import com.rsc_games.sledge.env.BuildEnvironment;
 import com.rsc_games.sledge.lib.LogModule;
 
 /**
@@ -14,17 +15,18 @@ import com.rsc_games.sledge.lib.LogModule;
  * and contains numerous bad design choices that may warrant a rewrite.
  */
 public class TargetTree {
-    ExecTree tree;
+    private ExecTree tree;
 
     /**
-     * Build the entire target tree.
+     * Run the entire file processor from start to finish.
      * 
-     * @param path Location of the build configuration file (should be 
-     *  ./hammer in the project root)
+     * @param path The location of the config file to process.
      */
     public TargetTree(String path) throws IOException {
         Tokenizer lexer = new Tokenizer(path);
-        ArrayList<Token> tokens = lexer.getAllTokens();
+
+        lexer.tokenizeFile();
+        ArrayList<Token> tokens = lexer.processTokens();
 
         // Turn the token stream into something resembling logical structure.
         CSTGenerator cst = new CSTGenerator(tokens);
@@ -49,10 +51,8 @@ public class TargetTree {
         this.tree = ast.buildExec();
     }
 
-    // TODO: Data leak
-    @Deprecated
-    public ExecTree getExecutableTree() {
-        return this.tree;
+    public void execTarget(BuildEnvironment environment, String target) {
+        this.tree.execTarget(environment.getVars(), target);
     }
     
     public void printTarget(String target) {
@@ -84,7 +84,7 @@ public class TargetTree {
         CharBuffer codebuf = CharBuffer.allocate((int)new File(filename).length());
 
         try {
-            reader = new FileReader("./hammer");
+            reader = new FileReader(filename);
             reader.read(codebuf);
             reader.close();
         }

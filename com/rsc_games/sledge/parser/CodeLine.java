@@ -8,7 +8,7 @@ import com.rsc_games.sledge.parser.ops.Operation;
  * Internal representation of a "codeline"- a fancy name for a line of executable
  * code in the build config.
  */
-class CodeLine {
+public class CodeLine {
     /**
      * All of the encapsulated tokens within this "codeline". (Why tokens?)
      */
@@ -19,6 +19,11 @@ class CodeLine {
      *  to walk tree.
      */
     TreeNode attachedNode;
+
+    /**
+     * Enable walking up the tree (useful for branch connections).
+     */
+    CodeLine parentLine;
 
     /**
      * AST bookkeeping. Represents how this codeline is meant to be executed
@@ -43,8 +48,9 @@ class CodeLine {
      * 
      * @param tokenStream What remains of the full token stream.
      */
-    public CodeLine(ArrayList<Token> tokenStream) {
+    public CodeLine(CodeLine parent, ArrayList<Token> tokenStream) {
         this.tokens = parseLine(tokenStream);
+        this.parentLine = parent;
     }
 
     /**
@@ -65,6 +71,32 @@ class CodeLine {
      */
     public TreeNode getTreeNode() {
         return this.attachedNode;
+    }
+
+    public Operation getOp() {
+        return this.op;
+    }
+
+    /**
+     * Convenience wrapper over the getPreviousLine function below.
+     * Hides internal complexity such as which line to pass to the
+     * parent function.
+     * 
+     * @return The previous line of code, if any.
+     */
+    public CodeLine getPreviousLine() {
+        return parentLine.getPreviousLine(this);
+    }
+
+    /**
+     * Get the line of code directly preceding this one, if any.
+     * 
+     * @param currentLine Current code line for finding a back pointer
+     * @return The previous line, if any, otherwise null.
+     */
+    private CodeLine getPreviousLine(CodeLine currentLine) {
+        int index = this.attachedNode.childLines.indexOf(currentLine) - 1;
+        return index > 0 ? this.attachedNode.childLines.get(index) : null;
     }
 
     public boolean isTarget() {
@@ -125,7 +157,7 @@ class CodeLine {
 
         // Line processing is done. Partial lines are not permitted.
         if (!validateTokenList(tokList))
-            throw new ProcessingException(tokList.get(0).lno, "illegal statement");
+            throw new ProcessingException(tokList.get(0).lno, "not a statement");
 
         return tokList;
     }
@@ -160,13 +192,13 @@ class CodeLine {
         //      %internal_unit <arg> <arg>
         //      @external_unit <arg> <arg>
 
-        // debugging
-        System.out.println("********** CURRENT CODELINE **************");
+        // // debugging
+        // System.out.println("********** CURRENT CODELINE **************");
 
-        for (Token tok : tokList)
-            System.out.println(tok);
+        // for (Token tok : tokList)
+        //     System.out.println(tok);
 
-        System.out.println();
+        // System.out.println();
         
         // Attempt to guess the line type.
         Token firstToken = tokList.get(0);
@@ -259,7 +291,7 @@ class CodeLine {
         if (attachedNode != null)
             attachedNode.analyze();
 
-        this.op = Operation.staticAnalyze(this.tokens);
+        this.op = Operation.staticAnalyze(this.tokens, this.attachedNode);
     }
 
     public String toString() {

@@ -1,7 +1,8 @@
 package com.rsc_games.sledge.parser.ops;
 
-import common.VariableState;
 import java.util.ArrayList;
+
+import com.rsc_games.sledge.env.BuilderVars;
 
 class VariableSet extends Operation {
     /**
@@ -29,9 +30,11 @@ class VariableSet extends Operation {
      * Provided args in the list:
      * args[0]: The variable name
      * args[1]: The variable data to append.
+     * 
+     * @param vars Current variable state (to add a new variable to)
      */
-    public void execute() {
+    public void execute(BuilderVars vars) {
         //System.out.println("Executing operation " + lineNo);
-        VariableState.set(args.get(0).stringVal(), args.get(1).stringVal());
+        vars.set(args.get(0).stringVal(vars), args.get(1).stringVal(vars));
     }
 }

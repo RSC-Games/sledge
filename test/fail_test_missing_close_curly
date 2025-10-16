@@ -18,7 +18,7 @@ compile {
     }
     else {
         %warn "No LWJGL support compiled in!";
-    }
+    
 
     # jBuilder must be asked to explicitly copy the build dir. Once done, it will automatically execute all ops on the new dir.
     %useoutdir;
@@ -26,7 +26,7 @@ compile {
     if (PLATFORM == "win") {
         # link in lwjgl binaries for windows
         # CLASSPATH := ";some_classpath" # Appends instead of clobbering the value.
-    }
+    
 
     %purge ".class";  # Erase all the stale class files.
     %javac "-cp" CLASSPATH ARGS MAINFILE;

@@ -2,12 +2,11 @@ package com.rsc_games.sledge.cli;
 
 import java.util.HashMap;
 
-public class Arguments {
+public class ArgsParser {
     /**
      * User-provided command line options. Accessible within the hammer
      * script.
      */
-    // TODO: Add builtin vars like -DSLEDGE_DEBUG
     HashMap<String, String> options = new HashMap<String, String>();
 
     /**
@@ -18,11 +17,10 @@ public class Arguments {
      */
     String target;
 
-    /**
-     * 
-     */
-    // TODO: Remove. Unused.
-    int argsCount = 0;
+    // /**
+    //  * 
+    //  */
+    // int argsCount = 0;
 
     /**
      * Parse the given arguments and provide them in a form intelligible
@@ -30,10 +28,10 @@ public class Arguments {
      * 
      * @param args Input command line arguments.
      */
-    public Arguments(String[] args) {
+    public ArgsParser(String[] args) {
         this.target = parseTarget(args);
         this.options = parseOptions(args);
-        this.argsCount = 1;
+        //this.argsCount = 1;
     }
 
     /**
@@ -90,6 +88,7 @@ public class Arguments {
     private String[] parseOption(String arg) {
         // Trim out the leading dash.
         String parseString = arg.substring(1);
+        String variable = arg.substring(2);
 
         // No other command line switches are currently supported. (Should add --help)
         char optionCode = parseString.charAt(0);
@@ -99,12 +98,12 @@ public class Arguments {
         
         // Parse the key and value, if any.
         // If no key is present, sledge defaults to an empty string.
-        int eqIndex = parseString.indexOf("=");
+        int eqIndex = variable.indexOf("=");
 
         if (eqIndex == -1) 
-            return new String[] {parseString.substring(1), ""};
+            return new String[] {variable.substring(1), ""};
 
-        return parseString.split("=");
+        return variable.split("=");
     }
 
     public String getTarget() {
@@ -112,10 +111,10 @@ public class Arguments {
     }
 
     /**
+     * Get the full list of sledge variables to pass in.
      * 
      * @return
      */
-    // TODO: Should we even allow access to this?
     public HashMap<String, String> getOptions() {
         return this.options;
     }

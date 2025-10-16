@@ -29,20 +29,27 @@ public class Tokenizer {
         tokTable.put("}", TokenID.TOK_CURLY_CLOSE);
         tokTable.put("\"", TokenID.TOK_QUOTE);
         tokTable.put("$", TokenID.TOK_DEREF);
-        tokTable.put(":", TokenID.TOK_APPEND);
+        tokTable.put(":", TokenID.TOK_COLON);
         tokTable.put("=", TokenID.TOK_EQUALS);
         tokTable.put("%", TokenID.TOK_INTERNAL_UNIT);
         tokTable.put("@", TokenID.TOK_UNIT);
-        // TODO: Parse &&, ||, !=, !
-        // TODO: Join := into a single token.
+
+        tokTable.put("<", TokenID.TOK_COND_LESS_THAN);
+        tokTable.put(">", TokenID.TOK_COND_GREATER_THAN);
+        tokTable.put("|", TokenID.TOK_PIPE);
+        tokTable.put("&", TokenID.TOK_AMPERSAND);
+        tokTable.put("!", TokenID.TOK_COND_NOT);
     }
 
-    FileReader fileReader;
-    int lno = 1;
+    private ArrayList<Token> tokenStream;
+    private FileReader fileReader;
 
-    TokenBuilder curToken;
-    boolean readNextChar = true;
-    String curTokData = "";
+    // Internal token processing state. Should be moved to a function.
+    private TokenBuilder curToken;
+    private boolean readNextChar = true;
+    private boolean escapeEscaped = false;
+    private String currentChar = "";
+    private int lno = 1;
 
     /**
      * Create a tokenizer to parse a given input file.
@@ -51,6 +58,7 @@ public class Tokenizer {
      */
     public Tokenizer(String fpath) throws IOException {
         this.fileReader = new FileReader(new File(fpath));
+        this.tokenStream = new ArrayList<Token>();
     }
 
     /**
@@ -61,24 +69,142 @@ public class Tokenizer {
     private boolean available() {
         return this.fileReader != null;
     }
-    
+
     /**
      * Process all tokens in the entire table at once. Once this is called,
      * the tokenizer object is no longer useful and should no longer be
-     * used.
-     * 
-     * @return All token-data pairs from the current location in the file
-     *  to the end.
+     * used, other than for simplifying the token stream.
      */
-    public ArrayList<Token> getAllTokens() {
+    public void tokenizeFile() {
         ArrayList<Token> tokens = new ArrayList<Token>();
         
         while (available()) {
             Token tok = getNextToken();
             tokens.add(tok);
         }
+
+        this.tokenStream.addAll(tokens);
+    }
+
+    /**
+     * Second pass. Go through the previously generated token stream and perform
+     * "token fusion". This reduces the complexity of parsing the token stream
+     * down the line.
+     * 
+     * @return The list of processed tokens.
+     */
+    public ArrayList<Token> processTokens() {
+        ArrayList<Token> processedTokens = new ArrayList<Token>();
+
+        // Longest mergeable sequence is 2 tokens. Look ahead one token
+        // and attempt to merge if possible. Otherwise, slide the window
+        // ahead one token and keep trying.
+        for (int i = 0; i < tokenStream.size(); i++) {
+            Token nextToken = tokenStream.get(i);
+
+            // Don't attempt to merge a non-mergeable token (most of them).
+            if (!Grammar.mergeables.contains(nextToken.tok)) {
+                processedTokens.add(nextToken);
+                continue;
+            }
+
+            // Boolean conjunctions (like ||, &&) are handled separately.
+            boolean isConjunction = nextToken.tok == TokenID.TOK_PIPE || nextToken.tok == TokenID.TOK_AMPERSAND;
+
+            // Locate the next mergeable candidate.
+            Token candidate = getNextViableToken(i);
+
+            // No merge to be done.
+            if (candidate == null) {
+                processedTokens.add(nextToken);
+                continue;
+            }
+
+            int candidateIndex = tokenStream.indexOf(candidate); 
+            TokenID mergeType = determineMergeType(nextToken);
+
+            // Each token can only bind to a very specific set of characters.
+            // However, all mergeables can bind to an equal sign.
+            if (!isConjunction && candidate.tok == TokenID.TOK_EQUALS) {
+                Token merged = new Token(mergeType, nextToken.val + candidate.val, nextToken.lno);
+                processedTokens.add(merged);
+                i = candidateIndex;
+                continue;
+            }
+
+            // Conjunctions can only bind to another of the same type as them.
+            if (isConjunction && nextToken.tok == candidate.tok) {
+                Token merged = new Token(mergeType, nextToken.val + candidate.val, candidateIndex);
+                processedTokens.add(merged);
+                i = candidateIndex;
+                continue;
+            }
+
+            // Can't merge this token as it doesn't adhere to the specified rules.
+            throw new ProcessingException(nextToken.lno, "parser error: invalid syntax");
+        }
         
-        return tokens;
+        return processedTokens;
+    }
+
+    /**
+     * Find the next viable token after the given index for a merge. This function
+     * implicitly ignores whitespace and comments. If a line terminator is found,
+     * immediately bail out (since that's illegal).
+     * 
+     * @param offset Current token index.
+     * @return The next viable token for a potential merge.
+     */
+    private Token getNextViableToken(int offset) {
+        for (int i = offset + 1; i < tokenStream.size(); i++) {
+            Token candidate = tokenStream.get(i);
+
+            // Skip whitespace and non-code tokens
+            if (Grammar.whitespace.contains(candidate.tok))
+                continue;
+
+            // If we hit a literal that's probably another term. Likely isn't any merge
+            // to be done.
+            if (candidate.tok == TokenID.TOK_STRING || candidate.tok == TokenID.TOK_NAME)
+                return null;
+
+            // Only a few character types are mergeable.
+            if (!Grammar.mergeables.contains(candidate.tok))
+                throw new ProcessingException(tokenStream.get(offset).lno, "parser error: invalid syntax");
+
+            return candidate;
+        }
+
+        throw new ProcessingException(tokenStream.get(offset).lno, "parser error: reached EOF while parsing");
+    }
+
+    /**
+     * Determine the merge type of the given input tokens. 
+     * 
+     * @param nextToken The token to (soon) be merged
+     * @return The new, merged, type of the token.
+     */
+    private TokenID determineMergeType(Token nextToken) {
+        // NOTE: Despite this solution being ugly, there's a reason I opted for a switch
+        // statement, rather than using a LUT.
+        switch (nextToken.tok) {
+            case TOK_EQUALS:
+                return TokenID.TOK_COND_EQUIVALENT;
+            case TOK_COLON:
+                return TokenID.TOK_APPEND;
+            case TOK_PIPE:
+                return TokenID.TOK_COND_OR;
+            case TOK_AMPERSAND:
+                return TokenID.TOK_COND_AND;
+            case TOK_COND_LESS_THAN:
+                return TokenID.TOK_COND_LESS_THAN_OR_EQUAL;
+            case TOK_COND_GREATER_THAN:
+                return TokenID.TOK_COND_GREATER_THAN_OR_EQUAL;
+            case TOK_COND_NOT:
+                return TokenID.TOK_COND_NOT_EQUIVALENT;
+            default:
+                throw new RuntimeException("internal error: unexpected mergeable token " + nextToken);
+        }
     }
 
     /**
@@ -88,7 +214,7 @@ public class Tokenizer {
      * 
      * @return The next token-data pair in the file.
      */
-    public Token getNextToken() {
+    private Token getNextToken() {
         Token nextToken = null;
 
         while (nextToken == null) {
@@ -96,9 +222,9 @@ public class Tokenizer {
                 return null;
 
             if (readNextChar) 
-                curTokData = readNextChar();
+                currentChar = readNextChar();
 
-            nextToken = processCharsToToken(curTokData);
+            nextToken = processCharsToToken(currentChar);
         }
         
         return nextToken;
@@ -128,10 +254,39 @@ public class Tokenizer {
         }
 
         // String processing and content recovery.
-        // TODO: Handle escape characters.
         if (isCurrentToken(TokenID.TOK_STRING)) {
-            if (tokType == TokenID.TOK_QUOTE)
-                return endToken();
+            String lastChar = curToken.getLastChar();
+
+            if (tokType == TokenID.TOK_QUOTE) {
+                if (!lastChar.equals("\\") || escapeEscaped)
+                    return endToken();
+
+                // Escape isn't actually part of the output.
+                this.curToken.replaceLastChar(nextChar);
+                return null;
+            }
+
+            // Strings are not allowed to continue past the end of a new line generally.
+            if (tokType == TokenID.TOK_NEWLINE) {
+                if (!lastChar.equals("\\") || escapeEscaped)
+                    throw new ProcessingException(lno, "parser error: unterminated string literal");
+
+                lno++; // Fix broken line number tracking.
+                this.curToken.replaceLastChar(nextChar);
+                return null;
+            }
+
+            // Prevent weird edge case where a \" is escaped properly but there are mismatched quotes.
+            if (tokType == TokenID.TOK_EOF)
+                throw new ProcessingException(lno, "parser error: reached EOF while parsing string");
+
+            // Handle escaping escape characters. Determined below the escape case to reduce
+            // logic complexity.
+            escapeEscaped = false;
+            if (currentChar.equals("\\") && lastChar.equals("\\")) {
+                escapeEscaped = true;
+                return null;
+            }
 
             this.curToken.append(nextChar);
             return null;

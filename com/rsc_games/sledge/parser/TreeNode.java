@@ -8,7 +8,7 @@ import com.rsc_games.sledge.parser.ops.Operation;
  * Evil twin of the codeline system. Recursively holds child codelines, which can
  * have their own children, etc.
  */
-class TreeNode {
+public class TreeNode {
     /**
      * Current indentation level of the tree (probably for debugging purposes)
      */
@@ -40,6 +40,15 @@ class TreeNode {
      */
     public void addLine(CodeLine line) {
         this.childLines.add(line);
+    }
+
+    /**
+     * Get the previous codeline in the parent structure.
+     * 
+     * @return Previous codeline (useful for if/else chains).
+     */
+    public CodeLine getPrecedingLine() {
+        return line.getPreviousLine();
     }
 
     /**

@@ -17,7 +17,7 @@ compile {
         # stuff
     }
     else {
-        %warn "No LWJGL support compiled in!";
+        %warn "No LWJGL support compiled in!;
     }
 
     # jBuilder must be asked to explicitly copy the build dir. Once done, it will automatically execute all ops on the new dir.

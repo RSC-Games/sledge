@@ -80,7 +80,7 @@ class CSTGenerator {
      */
     void buildCST0(TreeNode node) {
         while (tokenStream.size() > 0 && branchDepth >= 0) {
-            CodeLine line = new CodeLine(tokenStream);
+            CodeLine line = new CodeLine(node.line ,tokenStream);
 
             // Each branch of the tree is any code block that encapsulates
             // other code. If we haven't encountered one, keep processing

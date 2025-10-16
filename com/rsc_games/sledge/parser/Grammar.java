@@ -1,6 +1,7 @@
 package com.rsc_games.sledge.parser;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Helper functions for validating the language grammar in the CST.
@@ -8,18 +9,49 @@ import java.util.ArrayList;
  * confusion while parsing.
  */
 class Grammar {
-    public static final ArrayList<String> reservedWords;
-    public static final ArrayList<String> conditionals;
+    public static final HashSet<String> reservedWords;
+    public static final HashSet<String> reservedConditions;
+
+    public static final HashSet<TokenID> whitespace;
+    public static final HashSet<TokenID> mergeables;
+    public static final HashSet<TokenID> conditionalLiterals;
 
     static {
-        reservedWords = new ArrayList<String>();
-        conditionals = new ArrayList<String>();
+        reservedWords = new HashSet<String>();
+        reservedConditions = new HashSet<String>();
 
         reservedWords.add("if");
         reservedWords.add("elif");
         reservedWords.add("else");
 
-        conditionals.addAll(reservedWords);
+        reservedConditions.addAll(reservedWords);
+
+        // Whitespace token types (tokenizer)
+        whitespace = new HashSet<TokenID>();
+        whitespace.add(TokenID.TOK_COMMENT);
+        whitespace.add(TokenID.TOK_NEWLINE);
+        whitespace.add(TokenID.TOK_SPACE);
+
+        // Mergeable tokens (tokenizer)
+        mergeables = new HashSet<TokenID>();
+        mergeables.add(TokenID.TOK_EQUALS);
+        mergeables.add(TokenID.TOK_COLON);
+        mergeables.add(TokenID.TOK_PIPE);
+        mergeables.add(TokenID.TOK_AMPERSAND);
+        mergeables.add(TokenID.TOK_COND_LESS_THAN);
+        mergeables.add(TokenID.TOK_COND_GREATER_THAN);
+        mergeables.add(TokenID.TOK_COND_NOT);
+
+        // Conditional literals (like !=, ==, etc)
+        conditionalLiterals = new HashSet<TokenID>();
+        conditionalLiterals.add(TokenID.TOK_COND_LESS_THAN);
+        conditionalLiterals.add(TokenID.TOK_COND_LESS_THAN_OR_EQUAL);
+        conditionalLiterals.add(TokenID.TOK_COND_GREATER_THAN);
+        conditionalLiterals.add(TokenID.TOK_COND_GREATER_THAN_OR_EQUAL);
+        conditionalLiterals.add(TokenID.TOK_COND_EQUIVALENT);
+        conditionalLiterals.add(TokenID.TOK_COND_NOT_EQUIVALENT);
+        conditionalLiterals.add(TokenID.TOK_COND_OR);
+        conditionalLiterals.add(TokenID.TOK_COND_AND);
     }
 
     // TODO: Have a private class variable contain a detailed error state from the below
@@ -50,30 +82,15 @@ class Grammar {
             return true;
         }
         // Variable declaration. Must only have an lvalue, equal sign, and an rvalue.
-        else if (secondToken.tok == TokenID.TOK_EQUALS) {
+        else if (secondToken.tok == TokenID.TOK_EQUALS || secondToken.tok == TokenID.TOK_APPEND) {
             // Doesn't have any operand. Technically not legal, but it's not a showstopper.
             if (tokens.size() < 3)
                 return false;
 
             return validateRvalue(tokens, 2);
         }
-        // Fundamentally similar to above, but due to different parsing must be handled in
-        // its own case. This is a variable append operation, which parses its arguments
-        // identically to the above.
-        else if (secondToken.tok == TokenID.TOK_APPEND) {
-            // Can't really do anything yet (can't finish the syntax checks)
-            if (tokens.size() < 3)
-                return false;
-
-            // Variable append must be :=
-            if (tokens.get(2).tok != TokenID.TOK_EQUALS)
-                throw new ProcessingException(secondToken.lno, "illegal character in var append; expected :=");
-
-            // No operands yet.
-            if (tokens.size() < 4)
-                return false;
-
-            return validateRvalue(tokens, 3);
+        else if (secondToken.tok == TokenID.TOK_NAME && tokens.size() == 2) {
+            throw new ProcessingException(firstToken.lno, "possible missing { on target declaration");
         }
         // Special case: Probably a missing semicolon.
         else if (secondToken.tok == TokenID.TOK_NAME || secondToken.tok == TokenID.TOK_UNIT 
@@ -130,7 +147,7 @@ class Grammar {
             // Almost guaranteed missing semicolon (keywords are almost always the start of 
             // a new line)
             if (next.tok == TokenID.TOK_KEYWORD || next.tok == TokenID.TOK_UNIT 
-                || next.tok == TokenID.TOK_INTERNAL_UNIT)
+                || next.tok == TokenID.TOK_INTERNAL_UNIT || next.tok == TokenID.TOK_CURLY_CLOSE)
                 throw new ProcessingException(tokens.get(i - 1).lno, "missing semicolon at end of line");
 
             if (next.tok != TokenID.TOK_NAME && next.tok != TokenID.TOK_STRING)
@@ -155,7 +172,7 @@ class Grammar {
         Token firstToken = tokens.get(0);
         //Token secondToken = tokens.get(1);
 
-        if (conditionals.contains(firstToken.val)) {
+        if (reservedConditions.contains(firstToken.val)) {
             return validateConditional(firstToken.val, tokens);
         }
         else {

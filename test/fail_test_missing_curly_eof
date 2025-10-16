@@ -55,4 +55,3 @@ test {
 
     %register_lib "lwjgl.jar";
     %log "detected running sledge version" SLEDGE_VERSION SLEDGE_MAJOR SLEDGE_MINOR;
-}

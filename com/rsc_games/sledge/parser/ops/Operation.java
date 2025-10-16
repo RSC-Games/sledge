@@ -2,9 +2,11 @@ package com.rsc_games.sledge.parser.ops;
 
 import java.util.ArrayList;
 
+import com.rsc_games.sledge.env.BuilderVars;
 import com.rsc_games.sledge.parser.ProcessingException;
 import com.rsc_games.sledge.parser.Token;
 import com.rsc_games.sledge.parser.TokenID;
+import com.rsc_games.sledge.parser.TreeNode;
 
 public abstract class Operation {
     public final Opcode op;
@@ -29,8 +31,10 @@ public abstract class Operation {
 
     /**
      * Perform whatever is stored in this operation.
+     * 
+     * @param vars Sledge variable states (required for some ops)
      */
-    public abstract void execute();
+    public abstract void execute(BuilderVars vars);
 
     /**
      * Allow different operations on branches.
@@ -52,8 +56,8 @@ public abstract class Operation {
      * 
      * @param line Line tokens
      */
-    public static Operation staticAnalyze(ArrayList<Token> line) {        
-        return getOperationType(line);
+    public static Operation staticAnalyze(ArrayList<Token> line, TreeNode node) {        
+        return getOperationType(line, node);
     }
 
     /**
@@ -62,7 +66,7 @@ public abstract class Operation {
      * @param line Provided line of tokens.
      * @return Detected operation.
      */
-    private static Operation getOperationType(ArrayList<Token> line) {
+    private static Operation getOperationType(ArrayList<Token> line, TreeNode node) {
         /**
          * Parsing requirements for each operation (sorted by test order)
          * OP_TYPE_TARGET: tokens required: <target name> {
@@ -73,11 +77,14 @@ public abstract class Operation {
          * OP_TYPE_CMD: tokens required: @<cmd>
          */
         ArrayList<Argument> out = new ArrayList<Argument>();
+        //System.out.println("\nanalysing line " + line);
         
+        if (line.get(0).tok == TokenID.TOK_EOF)
+            return null;
         if (isTarget(line, out))
             return new Target(Opcode.OP_TYPE_TARGET, out);
         else if (isCondition(line, out))
-            return new Condition(Opcode.OP_TYPE_COND, out);
+            return new Condition(Opcode.OP_TYPE_COND, node.getPrecedingLine(), out);
         else if (isVarApp(line, out))
             return new VariableAppend(Opcode.OP_TYPE_VARAPP, out);
         else if (isVarSet(line, out))
@@ -106,19 +113,22 @@ public abstract class Operation {
      */
     private static boolean isCondition(ArrayList<Token> line, ArrayList<Argument> out) {
         Token keyword = line.get(0);
-        // line arg 1 should be a (. If it's not, then that's invalid syntax.
-        //ArrayList<Token> arg = new ArrayList<Token>();
-        //System.out.println("\n" + line + "\n");
-        Token term = line.get(line.size() - 1);
 
-        if (keyword.tok == TokenID.TOK_NAME && keyword.val.equals("if") && line.get(1).tok == TokenID.TOK_PAREN_OPEN
-            && line.get(line.size() - 2).tok == TokenID.TOK_PAREN_CLOSE && term.tok == TokenID.TOK_CURLY_OPEN) {
-            
+        // The syntactical structure of the conditional is already analyzed in the cst,
+        // so don't repeat that here.
+        if (keyword.tok != TokenID.TOK_KEYWORD)
+            return false;
+        
+        // We have a valid conditional
+        out.add(new Argument(keyword));
+
+        // Special case for if/elif
+        if (line.size() > 2) {
             ArrayList<Token> condition = parseArg(line, 2, line.size() - 2);
             out.add(new Argument(condition));
-            return true;
         }
-        return false;
+
+        return true;
     }
 
     /**
@@ -128,8 +138,8 @@ public abstract class Operation {
         Token name = line.get(0);
         Token op = line.get(1);
 
-        if (line.size() >= 4 && op.tok == TokenID.TOK_APPEND && line.get(2).tok == TokenID.TOK_EQUALS) {
-            ArrayList<Token> vardata = parseArg(line, 3, line.size());
+        if (line.size() >= 3 && op.tok == TokenID.TOK_APPEND) {
+            ArrayList<Token> vardata = parseArg(line, 2, line.size());
             out.add(new Argument(name));  // Variable name
             out.add(new Argument(vardata));  // Data to join (joined by " ")
             return true;

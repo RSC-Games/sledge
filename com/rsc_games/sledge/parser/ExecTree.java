@@ -1,6 +1,9 @@
 package com.rsc_games.sledge.parser;
 
 import java.util.HashMap;
+
+import com.rsc_games.sledge.env.BuilderVars;
+
 import java.util.ArrayList;
 
 /**
@@ -55,9 +58,8 @@ public class ExecTree {
         }
     }
 
-    // TODO: return execution status.
-    public void execTarget(String target) {
-        targets.get(target).execute();
+    public void execTarget(BuilderVars vars, String target) {
+        targets.get(target).execute(vars);
     }
 
     public void printTree(String target) {

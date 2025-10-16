@@ -2,6 +2,7 @@ package com.rsc_games.sledge.parser;
 
 import java.util.ArrayList;
 
+import com.rsc_games.sledge.env.BuilderVars;
 import com.rsc_games.sledge.parser.ops.Opcode;
 import com.rsc_games.sledge.parser.ops.Operation;
 
@@ -13,7 +14,7 @@ public class ExecTreeNode {
         if (base.op != Opcode.OP_TYPE_TARGET)
             throw new ProcessingException(base.getLineNumber(), "processing error: expected target type for tree root, got " + base.op);
 
-        name = base.getArgument(0).stringVal();
+        name = base.getArgument(0).stringVal__NoVarReplacement();
         operations = new ArrayList<Operation>();
     }
     
@@ -27,9 +28,9 @@ public class ExecTreeNode {
         }
     }
 
-    public void execute() {
+    public void execute(BuilderVars vars) {
         for (Operation op : operations) {
-            op.execute();
+            op.execute(vars);
         }
     }
 }

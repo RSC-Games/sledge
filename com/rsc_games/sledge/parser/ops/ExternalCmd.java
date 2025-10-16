@@ -1,9 +1,9 @@
 package com.rsc_games.sledge.parser.ops;
 
-import common.VariableState;
 import modules.Modules;
 import java.util.ArrayList;
 
+import com.rsc_games.sledge.env.BuilderVars;
 import com.rsc_games.sledge.parser.ProcessingException;
 
 class ExternalCmd extends Operation {
@@ -15,7 +15,7 @@ class ExternalCmd extends Operation {
      */
     public ExternalCmd(Opcode op, ArrayList<Argument> args) {
         super(op, args);
-        this.cmd = args.get(0).stringVal();
+        this.cmd = args.get(0).stringVal__NoVarReplacement();
     }
 
     /**
@@ -35,9 +35,11 @@ class ExternalCmd extends Operation {
      * Provided args in the list:
      * args[0]: Operation
      * args[1]: Arguments to pass in.
+     * 
+     * @param vars (unused)
      */
-    public void execute() {
-        String cmdline = args.get(1).stringVal();
+    public void execute(BuilderVars vars) {
+        String cmdline = args.get(1).stringVal(vars);
         System.out.println("Executing operation " + lineNo);
         int retcode = Modules.execCmd(cmd, cmdline);
 

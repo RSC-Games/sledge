@@ -33,6 +33,10 @@ compile {
     %purge ".java";  # Clean out the source files.
     # %log "Printing a message: here's the classpath" $(CLASSPATH)
 
+    bad_target {
+        
+    }
+
     # Run a provided unit with cmd or a jar
     # @jar unit args  # Provided external unit
     # @chdir  # Cmd

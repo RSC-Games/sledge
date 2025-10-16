@@ -10,7 +10,7 @@ compile {
     BINARY = "jbuilder.jar";  # Deployment binary.
 
     # Undefined symbols will by default evaluate to false.
-    if (USE_LWJGL) {
+    if USE_LWJGL) {
         CLASSPATH := ";lib/common/joml-1.10.5.jar;lib/common/lwjgl-glfw.jar;lib/common/lwjgl.jar;lib/common/lwjgl-opengl.jar;lib/common/lwjgl-stb.jar";
     }
     elif (0) {

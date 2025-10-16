@@ -23,7 +23,7 @@ compile {
     # jBuilder must be asked to explicitly copy the build dir. Once done, it will automatically execute all ops on the new dir.
     %useoutdir;
 
-    if (PLATFORM == "win") {
+    if (PLATFORM == "win" {
         # link in lwjgl binaries for windows
         # CLASSPATH := ";some_classpath" # Appends instead of clobbering the value.
     }

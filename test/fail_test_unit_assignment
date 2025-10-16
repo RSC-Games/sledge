@@ -9,7 +9,9 @@ compile {
     ENTRYPOINT = "Main";  # Code entrypoint
     BINARY = "jbuilder.jar";  # Deployment binary.
 
-    # Undefined symbols will by default evaluate to false.
+    # OPERATOR_FUSED :@ "foo";
+
+    # Undefined symbols will by default evaluate to false
     if (USE_LWJGL) {
         CLASSPATH := ";lib/common/joml-1.10.5.jar;lib/common/lwjgl-glfw.jar;lib/common/lwjgl.jar;lib/common/lwjgl-opengl.jar;lib/common/lwjgl-stb.jar";
     }
@@ -17,7 +19,6 @@ compile {
         # stuff
     }
     else {
-        %warn "No LWJGL support compiled in!";
     }
 
     # jBuilder must be asked to explicitly copy the build dir. Once done, it will automatically execute all ops on the new dir.
@@ -38,7 +39,7 @@ compile {
     # @chdir  # Cmd
 
     # Do linking stuff. Builds the jarfile by default.
-    %mkjar BINARY ENTRYPOINT;
+    %mkjar := BINARY ENTRYPOINT;
     %keep;  # Keep dist code only.
     # %linkldr "EN_WRITE_PIPE" # Copies the Java launcher into the directory and rename the current binary bin_resources
     %cpsledge BINARY;  # Copies this build on top of the old jbuilder version. Not to be used lightly.

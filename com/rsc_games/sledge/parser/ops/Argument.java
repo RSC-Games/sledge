@@ -1,9 +1,8 @@
 package com.rsc_games.sledge.parser.ops;
 
-import common.VariableState;
-
 import java.util.ArrayList;
 
+import com.rsc_games.sledge.env.BuilderVars;
 import com.rsc_games.sledge.parser.ProcessingException;
 import com.rsc_games.sledge.parser.Token;
 import com.rsc_games.sledge.parser.TokenID;
@@ -46,20 +45,21 @@ public class Argument {
      * Processes the argument stream during execution and returns a processed 
      * result.
      * 
+     * @param vars Current variable state.
      * @return Whether the condition is true at the time it's called.
      */
     // TODO: Clunky evaluation. Replace with a functional system.
-    public boolean evaluate() {
+    public boolean evaluate(BuilderVars vars) {
         // Expand all string variables for evaluation.
-        this.parseVars();
+        this.parseVars(vars);
 
         // Single item argument evaluation (like if (1) or if ($(VARIABLE))... no other elements).
         if (this.tokens.size() == 1) {
             Token t = this.tokens.get(0);
 
-            // TODO: Why are we forcing string values?
-            if (t.tok != TokenID.TOK_STRING)
-                throw new ProcessingException(t.lno, "expected string value"); 
+            // TODO: Error checking later
+            //if (t.tok != TokenID.TOK_STRING)
+            //    throw new ProcessingException(t.lno, "expected string value"); 
 
             System.out.println("Condition eval: " + !t.val.equals(""));
             return !t.val.equals("");
@@ -79,7 +79,6 @@ public class Argument {
             return lval.val.equals(rval.val);
         }
 
-        // TODO: See above TODO
         System.out.println("Cannot evaluate longer conditions; not supported.");
         System.out.println(tokens);
         return false;
@@ -90,7 +89,7 @@ public class Argument {
      * Forces the $() syntax for variables.
      */
     // TODO: what does this function do?
-    public void parseVars() {
+    public void parseVars(BuilderVars vars) {
         boolean deref = false;
         boolean parenOpen = false;
 
@@ -110,7 +109,7 @@ public class Argument {
                 if (!parenOpen) 
                     throw new ProcessingException(tok.lno, "expected name in $(), got " + tokens);
 
-                Token newTok = new Token(TokenID.TOK_STRING, VariableState.get(tok.val), tok.lno);
+                Token newTok = new Token(TokenID.TOK_STRING, vars.get(tok.val), tok.lno);
                 this.tokens.set(i, newTok);
             }
             else if (tok.tok == TokenID.TOK_PAREN_CLOSE) {
@@ -140,7 +139,7 @@ public class Argument {
      */
     // TODO: Resolving variables is clunky and badly implemented. It should not concatenate
     // everything into a long string.
-    public String stringVal() {
+    public String stringVal(BuilderVars vars) {
         String out = "";
         boolean deref = false;
         boolean parenOpen = false;
@@ -159,20 +158,59 @@ public class Argument {
                 if (!parenOpen) 
                     throw new ProcessingException(tok.lno, "missing parenthesis around var resolution");
 
-                out += (out.equals("") ? VariableState.get(tok.val) : " " + VariableState.get(tok.val));
+                out += (out.equals("") ? "" : " ") + vars.get(tok.val);
             }
             else if (tok.tok == TokenID.TOK_PAREN_CLOSE) {
                 if (!deref && !parenOpen) 
                     throw new ProcessingException(tok.lno, "expected name within $(), got (todo: process var line)");
                 
-                    deref = false;
+                deref = false;
                 parenOpen = false;
             }
             else {
                 if (deref || parenOpen) 
                     throw new ProcessingException(tok.lno, "missing closing parenthesis around var resolution");
                 
-                    out += (out.equals("") ? tok.val : " " + tok.val);
+                out += (out.equals("") ? "" : " ") + tok.val;
+            }
+        }
+
+        return out;
+    }
+
+    public String stringVal__NoVarReplacement() {
+        String out = "";
+        boolean deref = false;
+        boolean parenOpen = false;
+
+        for (Token tok : tokens) {
+            if (tok.tok == TokenID.TOK_DEREF) {
+                deref = true;
+            }
+            else if (tok.tok == TokenID.TOK_PAREN_OPEN) {
+                if (!deref) 
+                    throw new ProcessingException(tok.lno, "missing \"$\" in var resolution: (todo: process var name)");
+                
+                parenOpen = true;
+            }
+            else if (deref && tok.tok == TokenID.TOK_NAME) {
+                if (!parenOpen) 
+                    throw new ProcessingException(tok.lno, "missing parenthesis around var resolution");
+
+                out += (out.equals("") ? "" : " ") + tok.val;
+            }
+            else if (tok.tok == TokenID.TOK_PAREN_CLOSE) {
+                if (!deref && !parenOpen) 
+                    throw new ProcessingException(tok.lno, "expected name within $(), got (todo: process var line)");
+                
+                deref = false;
+                parenOpen = false;
+            }
+            else {
+                if (deref || parenOpen) 
+                    throw new ProcessingException(tok.lno, "missing closing parenthesis around var resolution");
+                
+                out += (out.equals("") ? "" : " ") + tok.val;
             }
         }
 
@@ -180,6 +218,6 @@ public class Argument {
     }
     
     public String toString() {
-        return stringVal();
+        return stringVal__NoVarReplacement();
     }
 }
