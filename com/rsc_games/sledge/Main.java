@@ -21,6 +21,7 @@ package com.rsc_games.sledge;
 
 import java.io.IOException;
 
+import com.rsc_games.sledge.cli.ArgsParseException;
 import com.rsc_games.sledge.cli.ArgsParser;
 import com.rsc_games.sledge.env.BuildEnvironment;
 import com.rsc_games.sledge.lib.LogModule;
@@ -32,17 +33,27 @@ public class Main {
     // See Sledge config to change the version string.
 
     public static void main(String[] args) {
-        LogModule.log("sledge", "sledge binary " + VersionHeader.VERSION + VersionHeader.SUFFIX);
-        LogModule.log("sledge", "sledge is licensed under the Apache License Version 2.0");
+        ArgsParser cliArgs = null;
+        
+        try {
+            cliArgs = new ArgsParser(args);
+        }
+        catch (ArgsParseException ie) {
+            LogModule.error("sledge", String.format("fatal: %s: %s", ie.getMessage(), ie.getFaultingFlag()));
+            System.exit(1);
+        }
 
-        ArgsParser cliArgs = new ArgsParser(args);
         String buildTarget = cliArgs.getTarget();
 
         // TODO: Construct build environment, and figure out what to do if no environment exists (probably just
         // default environment, and force run __init?)
-        BuildEnvironment buildEnvironment = new BuildEnvironment("./build/sledge_project_metadata.json");
+        BuildEnvironment buildEnvironment = new BuildEnvironment(cliArgs);
         buildEnvironment.getVars().addVars(cliArgs.getOptions());
         buildEnvironment.getVars().printArgs();
+
+            // Splash ribbon.
+        LogModule.log("sledge", "sledge binary " + VersionHeader.VERSION + VersionHeader.SUFFIX);
+        LogModule.log("sledge", "sledge is licensed under the Apache License Version 2.0");
 
         // It doesn't take a genius to figure out how the config file got its name.
         TargetTree targetTree = loadTargetTree(buildEnvironment);
@@ -63,7 +74,7 @@ public class Main {
         LogModule.log("sledge", "Building target " + buildTarget);
 
         try {
-            if (buildEnvironment.getVars().exists("SLEDGE_DEBUG"))
+            if (buildEnvironment.debuggingEnabled())
                 targetTree.printTarget(buildTarget);
 
             targetTree.execTarget(buildEnvironment, buildTarget);
@@ -91,7 +102,7 @@ public class Main {
 
     private static void handleParserException(BuildEnvironment environment, ProcessingException ie) {
         // Only show debugging information if requested.
-        if (environment.getVars().exists("SLEDGE_DEBUG")) {
+        if (environment.debuggingEnabled()) {
             LogModule.warn("sledge", "dumping stack trace");
             ie.printStackTrace();
         }

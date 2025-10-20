@@ -9,6 +9,12 @@ class Condition extends Operation {
     ArrayList<Operation> conditionalElements;
     Condition connectedBranch;
 
+    /** 
+     * Any preceeding case is guaranteed to have been executed. Therefore it's
+     * going to definitively have evaluated true or false.
+     */
+    boolean conditionMet = false;
+
     /**
      * Represents a target operation. A target contains a list of inner operations
      * and runs them when {@code execute} is called. A Target must never be nested.
@@ -49,7 +55,14 @@ class Condition extends Operation {
 
         System.out.println(args + " has previous branch " + this.connectedBranch);
 
-        if (!args.get(1).evaluate(vars))
+        String condType = this.args.get(0).stringVal__NoVarReplacement();
+
+        // Else only executes if the above case evaluated false.
+        // TODO: Ensure else without if/elif is assessed at parse time.
+        if (condType.equals("else") && conditionMet)
+            return;
+
+        if (!condType.equals("else") && !args.get(1).evaluate(vars))
             return;
 
         for (Operation op : conditionalElements)

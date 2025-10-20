@@ -1,13 +1,37 @@
 package com.rsc_games.sledge.cli;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class ArgsParser {
+    static final HashSet<String> legalSwitches;
+    static final HashSet<String> legalFlags;
+
+    static {
+        legalSwitches = new HashSet<String>();
+
+        legalSwitches.add("verbose");
+        legalSwitches.add("hammer");
+        legalSwitches.add("help");
+
+        legalFlags = new HashSet<String>();
+
+        legalFlags.add("D");
+        legalFlags.add("v");
+        legalFlags.add("c");
+        legalFlags.add("h");
+    }
+
     /**
-     * User-provided command line options. Accessible within the hammer
-     * script.
+     * User-provided command line options to be forwarded to the script.
      */
     HashMap<String, String> options = new HashMap<String, String>();
+
+    /**
+     * Switches intended for sledge itself and not the script. Also contains
+     * non-option flags.
+     */
+    HashMap<String, String> switches = new HashMap<String, String>();
 
     /**
      * Build target to execute (within the executable tree)
@@ -30,8 +54,7 @@ public class ArgsParser {
      */
     public ArgsParser(String[] args) {
         this.target = parseTarget(args);
-        this.options = parseOptions(args);
-        //this.argsCount = 1;
+        parseCommandLine(args);
     }
 
     /**
@@ -44,7 +67,7 @@ public class ArgsParser {
         String foundTarget = null;
 
         for (String arg : args) {
-            // Likely an option. Skip.
+            // Flag/switch; not a target
             if (arg.charAt(0) == '-') 
                 continue;
 
@@ -63,47 +86,81 @@ public class ArgsParser {
      * @param args Input args list
      * @return A list of the pass through options (ignores switches)
      */
-    private HashMap<String, String> parseOptions(String[] args) {
+    private HashMap<String, String> parseCommandLine(String[] args) {
         HashMap<String, String> foundOptions = new HashMap<String, String>();
 
         for (String arg : args) {
-            // Probably the target. Skip.
-            // TODO: Add robust handling for command line flags (won't be -D)
-            if (arg.charAt(0) != '-') 
-                continue;
+            // Some other command line switch.
+            if (arg.startsWith("--"))
+                processSwitch(arg.substring(2));
 
-            String[] optionData = parseOption(arg);
-            foundOptions.put(optionData[0], optionData[1]);
+            // Short length switches.
+            else if (arg.charAt(0) == '-')
+                processFlags(arg.substring(1));
+
+            // Probably the target. Skip.
         }
 
         return foundOptions;
     }
 
     /**
+     * Process a long-form switch (--<switch-name>).
+     * 
+     * @param arg The arg to parse
+     * @return The key-value pair (if any)
+     */
+    private void processSwitch(String arg) {
+        String[] keyValuePair = getKeyValuePair(arg);
+
+        if (!legalSwitches.contains(keyValuePair[0]))
+            throw new ArgsParseException("unrecognized switch", "--" + keyValuePair[0]); 
+
+        this.switches.put(keyValuePair[0], keyValuePair[1]);
+    }
+
+    /**
      * Parse the option into a key-value pair.
      * 
-     * @param arg Option to parse (in the full DBLAH_BLAH form)
+     * @param arg Option to parse (in the full BLAH_BLAH form, without -D)
      * @return The parsed string as an array in the form (key, value)
      */
-    private String[] parseOption(String arg) {
-        // Trim out the leading dash.
-        String parseString = arg.substring(1);
-        String variable = arg.substring(2);
+    private void processFlags(String arg) {
+        String optionCode = arg.substring(0, 1);
 
-        // No other command line switches are currently supported. (Should add --help)
-        char optionCode = parseString.charAt(0);
+        // Handle all other flag types (like -fLaGs). Each is parsed individually.
+        // TODO: short-length args don't parse arguments properly.
+        if (!optionCode.equals("D")) {
+            for (char option : arg.toCharArray()) {
+                if (!legalFlags.contains("" + option))
+                    throw new ArgsParseException("unrecognized flag", "-" + optionCode);
 
-        if (optionCode != 'D') 
-            throw new IllegalArgumentException("Unknown option: -" + optionCode);
-        
+                switches.put("" + option, null);
+            }
+
+            return;
+        }
+
+        // Process the sledge variable (in the format of -DVARIABLE)
+        String[] var = getKeyValuePair(arg.substring(1));
+        options.put(var[0], var[1]);
+    }
+
+    /**
+     * Extract a key/value pair from the given arg.
+     * 
+     * @param arg The key/value pair in the command line.
+     * @return The split key/value.
+     */
+    private String[] getKeyValuePair(String arg) {
         // Parse the key and value, if any.
-        // If no key is present, sledge defaults to an empty string.
-        int eqIndex = variable.indexOf("=");
+        int eqIndex = arg.indexOf("=");
 
         if (eqIndex == -1) 
-            return new String[] {variable.substring(1), ""};
+            return new String[] {arg, null};
 
-        return variable.split("=");
+        // Only split the key/value pair in half. Don't recursively do it.
+        return arg.split("=", 2);
     }
 
     public String getTarget() {
@@ -117,5 +174,9 @@ public class ArgsParser {
      */
     public HashMap<String, String> getOptions() {
         return this.options;
+    }
+
+    public HashMap<String, String> getSwitches() {
+        return this.switches;
     }
 }

@@ -1,0 +1,145 @@
+implement constant literals in cst generator (ensure names don't start with a number and literals are numeric only)
+add <=, >=, <, >, ==, !=, &&, ||, !
+add proper command line switch support, and add --verbose, -v; --hammer, -c; --help, -h; etc
+TODO: print a help message to show the above command line switches and usage.
+add a help message.
+
+add a system for building other sledge projects as dependencies
+allow manual specification of required libs and mark them as buildable dependencies (if necessary)
+add support for external modules on PATH (TODO: not specified below)
+allow exclusion of resources from various locations in the final JAR
+allow marking of files to compile, or autogenerate them if requested (ignore all folders with a ./hammer in them)
+
+List of sledge variables:
+PLATFORM (str) [windows | macos | linux]:
+	Contains the OS sledge is currently running on. Can be changed with -DPLATFORM=<os>
+	if cross-compiling for another platform (necessary for certain Java projects).
+
+ARCH (str) [x64 | aarch64]:
+	Host processor architecture. Not strictly necessary for Java unless JNI libraries
+	are in use.
+
+SLEDGE_VERSION (literal) [4+]:
+	Sledge version currently in use. None of the below commands were supported prior.
+
+SLEDGE_MAJOR (literal) [0+]:
+	Active sledge major number. Major versions introduce new commands and can change
+	older ones (not frequent), since backward compatibility should be maintained
+	between major versions.
+
+SLEDGE_MINOR (literal) [0+]:
+	Active sledge minor number. Minor versions introduce small features here and there,
+	and will always be backward compatible across versions.
+
+SLEDGE_DEBUG (str) [not defined]: (need to make a separate switch)
+	Enables verbose message output from sledge for development purposes. Useful both for
+	developing sledge and for writing the sledge script, though it's less useful now that
+	the parser can competently report errors.	
+
+COMPILER_FLAGS (str) []:
+	Flags passed to javac or other compilers when compiling the source code.
+
+List of sledge units:
+%settoolchain [javac path=javac, jar path=jar, min java version=17]:
+	Sets the toolchain locations, paths, and variables used by sledge. Required for
+	building any project properly. If this unit isn't executed, default values are
+	used.
+
+%depresolve_mode [mode: auto | manual] (default: auto)
+	Determines how sledge locates and registers dependencies (like external JARs)
+	Auto informs sledge to walk the project directory and add all JAR files found
+	during the walk to the project dependency tree. Manual requires all dependencies
+	to be manually registered by the dev. Only usable in __init.
+	
+%dep_exclude [folder/file path, ...]
+	Note: For use with the auto resolver. 
+	Informs sledge to skip the listed directories or files (if more than one is 
+	provided) and not to register any JARs found within/not register the specific JAR
+	(if specified). There is no limit on the amount of folders/libs you can exclude.
+
+%dep_exclude_sources [suffix, ...]
+	Note: For use with the auto resolver.
+	Skip all JARs with the provided suffixes immediately preceeding the file extension.
+	Useful for removing annotated source JARs that are not necessary for a build.
+
+%registerdep [folder/file path, ...]
+	Note: For use with the manual resolver.
+	Informs sledge to register the provided file as a dependency, or (if a folder is
+	provided), register all JARs within recursively. Can be paired with %dep_exclude.
+
+%projectname [project name]
+	Set the project's name. Should look something like this, and should be in quotes:
+		> project_name 
+
+%entrypoint [path to main class]
+	Specifies the location of the main class. Especially useful if the main class is
+	in a non-standard location.
+
+%targetdir [folder path]
+	Specifies the directory to perform the next operation in. Must be a path relative
+	to <PROJECT ROOT>/build. All following operations will be done in this folder.
+
+%clean [target folder path]
+	Removes all target folders and all build artifacts. If a target folder path is
+	specified, that is removed instead.
+
+%saveartifact [file path]
+	Specifies a file relative to the target directory to copy into the build folder
+	for a different build stage.
+
+%restoreartifact [file path, keep=true]
+	Copies an artifact from the build folder into the target directory at a given path.
+	If keep is specified and false then the file is moved instead.
+
+NOTE: Should be a conditional that is recognized by the parser (reserved word)
+%artifactexists [file path]
+	Determine if an artifact is present. Useful for skipping build jobs that don't need
+	to be redone.
+
+NOTE: See above
+%targetbuilt [file path]
+	Identify if the particular target folder has a fully built object. Also determine if
+	a rebuild is necessary due to newer timestamps.
+
+%compile [filter=".java", ...]
+%javac [filter=".java", ...]
+	Compile source files and emit the object code in the target folder.
+
+%javac_lib [filter=".java", ...]
+	Compile source files and emit the object code in the target folder. Differs from the
+	above in that it compiles every file in the folder, rather than just the entry point.
+
+%mkjar [manifest]
+	Generate a JAR archive with the emitted source code/resources from the target folder.
+	If no manifest is specified, this unit will generate its own and use that. Implicitly
+	copies the JAR to the build folder after execution as code.jar.
+
+%mkromjar [jarname]
+	Generate a JAR archive with all files found within the target folder. If no name is
+	specified, it will generate a JAR named res.jar and copy that to the build folder.
+
+%mkdist [jar path, ...]
+	If no dist folder exists, this unit will create a folder named "dist", copy code.jar
+	(and rom.jar if it exists), and all registered dependencies to the dist folder.
+	Dependencies will be located in the dist folder at ./lib, regardless of where they
+	are in the project root. If jar paths are specified, those JARs and their dependencies
+	will be copied into the dist folder instead of code.jar and rom.jar.
+
+	This is the final step of the build process in most cases.
+
+%cpresources [folder path, ...]
+	Copy the resources in the source directory in each argument provided to the current 
+	target folder at the same relative path.
+
+%builddep_sledge [folder dep_root, ...]
+	Recursively call sledge on a submodule and run its own build process before continuing
+	this one.
+
+%log [message, ...]
+	Print a message. Probably needed every now and then.
+
+%warn [message, ...]
+	Print a warning. Probably more important.
+
+%error [message, ...]
+	Something was encountered that should not be the case. Abort.
