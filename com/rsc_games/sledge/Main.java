@@ -21,7 +21,6 @@ package com.rsc_games.sledge;
 
 import java.io.IOException;
 
-import com.rsc_games.sledge.cli.ArgsParseException;
 import com.rsc_games.sledge.cli.ArgsParser;
 import com.rsc_games.sledge.env.BuildEnvironment;
 import com.rsc_games.sledge.lib.LogModule;
@@ -61,13 +60,14 @@ public class Main {
 
         // Some kind of tree processing error occurred.
         if (targetTree == null) {
-            LogModule.error("sledge", "Failed to process ./hammer. Stop.");
+            LogModule.error("sledge", String.format("failed to process config file %s! stop.", 
+                                                         buildEnvironment.getConfigFilePath()));
             System.exit(1);
         }
 
         // Sledge can't (reliably) assume a target. Bail out.
         if (buildTarget == null) {
-            LogModule.error("sledge", "No target specified. Stop.");
+            LogModule.error("sledge", "no target specified. stop.");
             targetTree.listTargets();
             System.exit(1);
         }
@@ -90,7 +90,8 @@ public class Main {
             return new TargetTree(buildEnvironment.getConfigFilePath());
         }
         catch (IOException ie) {
-            LogModule.error("sledge", "Failed to find ./hammer. Stop.");
+            LogModule.error("sledge", String.format("failed to find config file %s! stop.", 
+                                                         buildEnvironment.getConfigFilePath()));
             System.exit(1);
         }
         // Failed to process the unit. 

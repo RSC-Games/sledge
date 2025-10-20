@@ -1,8 +1,5 @@
 implement constant literals in cst generator (ensure names don't start with a number and literals are numeric only)
 add <=, >=, <, >, ==, !=, &&, ||, !
-add proper command line switch support, and add --verbose, -v; --hammer, -c; --help, -h; etc
-TODO: print a help message to show the above command line switches and usage.
-add a help message.
 
 add a system for building other sledge projects as dependencies
 allow manual specification of required libs and mark them as buildable dependencies (if necessary)

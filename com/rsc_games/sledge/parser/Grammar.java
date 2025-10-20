@@ -56,6 +56,23 @@ class Grammar {
 
     // TODO: Have a private class variable contain a detailed error state from the below
     // functions if they return false, and allow callers to query this.
+    private static String errorDetails;
+
+    /**
+     * Get the internal error state.
+     * 
+     * @return The error string (if any), otherwise null.
+     */
+    public static String getErrorDetails() {
+        return errorDetails;
+    }
+
+    /**
+     * Erase stale error details (to avoid reporting incorrect error information)
+     */
+    private static void resetErrorDetails() {
+        errorDetails = null;
+    }
 
     /**
      * Determine if the given token list is a legal line.
@@ -79,13 +96,16 @@ class Grammar {
             if (tokens.size() > 2)
                 throw new ProcessingException(secondToken.lno, "target cannot take arguments");
 
+            resetErrorDetails();
             return true;
         }
         // Variable declaration. Must only have an lvalue, equal sign, and an rvalue.
         else if (secondToken.tok == TokenID.TOK_EQUALS || secondToken.tok == TokenID.TOK_APPEND) {
             // Doesn't have any operand. Technically not legal, but it's not a showstopper.
-            if (tokens.size() < 3)
+            if (tokens.size() < 3) {
+                errorDetails = "missing operand for assignment";
                 return false;
+            }
 
             return validateRvalue(tokens, 2);
         }
@@ -117,15 +137,15 @@ class Grammar {
     public static boolean isValidLine_TYPE_UNIT(ArrayList<Token> tokens) {
         Token secondToken = tokens.get(1);
 
-        // All of the units have the same syntax, so no special logic is required.
-
         // A unit name cannot be a literal or any non-name string.
         if (secondToken.tok != TokenID.TOK_NAME)
             throw new ProcessingException(tokens.get(0).lno, "expected unit name");
 
         // No arguments to scan.
-        if (tokens.size() < 3)
+        if (tokens.size() < 3) {
+            resetErrorDetails();
             return true;
+        }
 
         return validateRvalue(tokens, 2);
     }
@@ -154,6 +174,7 @@ class Grammar {
                 throw new ProcessingException(next.lno, "illegal type in rvalue: " + next.tok);
         }
 
+        resetErrorDetails();
         return true;
     }
 
@@ -175,10 +196,10 @@ class Grammar {
         if (reservedConditions.contains(firstToken.val)) {
             return validateConditional(firstToken.val, tokens);
         }
-        else {
-            // No other reserved words are currently supported.
+
+        // No other reserved words are currently supported.
+        else
             throw new ProcessingException(firstToken.lno, "processing error: unimplemented/unsupported keyword");
-        }
     }
 
     /**
@@ -200,27 +221,33 @@ class Grammar {
             if (secondToken.tok != TokenID.TOK_CURLY_OPEN)
                 throw new ProcessingException(tokens.get(0).lno, "missing \"{\" on conditional");
 
+            resetErrorDetails();
             return true;
         }
 
         // Not enough tokens for this to possibly be a full line of code.
         // The shortest requires if () {, which is 4 tokens.
-        if (tokens.size() < 4)
+        if (tokens.size() < 4) {
+            errorDetails = "invalid statement";
             return false;
+        }
 
         // If/elif are identical. They must have parenthesis and the opening bracket.
         Token closeParenthesis = tokens.get(tokens.size() - 2);
         Token termBracket = tokens.get(tokens.size() - 1);
 
-        if (closeParenthesis.tok != TokenID.TOK_PAREN_CLOSE)
-            //throw new ProcessingException(secondToken.lno, "expected \")\" on conditional");
+        if (closeParenthesis.tok != TokenID.TOK_PAREN_CLOSE) {
+            errorDetails = "missing \")\" on conditional statement";
             return false;
+        }
 
-        if (termBracket.tok != TokenID.TOK_CURLY_OPEN)
-            //throw new ProcessingException(secondToken.lno, "missing \"{\" on conditional");
+        if (termBracket.tok != TokenID.TOK_CURLY_OPEN) {
+            errorDetails = "missing \"{\" on conditional statement";
             return false;
+        }
         
-        // TODO: still need to test actual internal condition to ensure its legal.
+        // TODO: still need to test actual internal condition to ensure it's legal.
+        resetErrorDetails();
         return true;
     }
 }
