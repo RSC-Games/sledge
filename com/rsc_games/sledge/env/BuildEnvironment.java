@@ -35,8 +35,7 @@ public class BuildEnvironment {
     private String projectFolder = ".";
 
     /**
-     * Path to the file containing all of the build instructions. Due to internal
-     * limitations of sledge, this cannot technically be changed.
+     * Path to the file containing all of the build instructions.
      */
     private String configFile = "./hammer";
 
@@ -67,26 +66,45 @@ public class BuildEnvironment {
         this.builderVars = new BuilderVars();
         this.builderVars.addVars(argsParser.getOptions());
         this.commandLineSwitches = argsParser.getSwitches();
+        this.configFile = findConfigFilePath();
 
         // TODO: Load the project data json and populate the fields.
-        if (this.switchExists("hammer") /*|| this.switchExists("c")*/) {
-            String configPath = this.getSwitch("hammer");
-
-            if (configPath == null)
-                // TODO: fatal exception
-                throw new RuntimeException("missing value for hammer flag");
-
-            this.configFile = configPath;
-        }
-
     }
 
-    public String getConfigFilePath() {
+    /**
+     * Determine a non-standard config file path, if any.
+     * 
+     * @return The config file path, or ./hammer if no alternate path
+     * was specified.
+     */
+    private String findConfigFilePath() {
+        String configPath = this.configFile;
+        
+        if (this.switchExists("hammer") || this.switchExists("c")) {
+            configPath = this.getSwitch("hammer");
+
+            if (configPath == null)
+                configPath = this.getSwitch("c");
+
+            // No flags specified. Assume default path.
+            if (configPath == null)
+                return this.configFile;
+        }
+
+        this.configFile = configPath;
         return this.configFile;
     }
 
     public BuilderVars getVars() {
         return this.builderVars;
+    }
+
+    /**
+     * Get the already determined config file location.
+     * @return The cached config file path
+     */
+    public String getConfigFilePath() {
+        return this.configFile;
     }
 
     /**

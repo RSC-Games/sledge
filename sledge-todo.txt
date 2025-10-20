@@ -40,6 +40,11 @@ COMPILER_FLAGS (str) []:
 	Flags passed to javac or other compilers when compiling the source code.
 
 List of sledge units:
+%genversionheader [path, version] (path default: Same folder as main class)
+	Generates a version header file for the project, overwriting VersionHeader.java
+	if it already exists. If no path is specified, the version header will be created
+	in the same folder as the entry point class.
+
 %settoolchain [javac path=javac, jar path=jar, min java version=17]:
 	Sets the toolchain locations, paths, and variables used by sledge. Required for
 	building any project properly. If this unit isn't executed, default values are

@@ -33,17 +33,18 @@ public class Main {
     // See Sledge config to change the version string.
 
     public static void main(String[] args) {
-        ArgsParser cliArgs = null;
-        
-        try {
-            cliArgs = new ArgsParser(args);
-        }
-        catch (ArgsParseException ie) {
-            LogModule.error("sledge", String.format("fatal: %s: %s", ie.getMessage(), ie.getFaultingFlag()));
+        ArgsParser cliArgs = ArgsParser.processCommandLineArgs(args);
+
+        // Some error happened within the parser.
+        if (cliArgs == null)
             System.exit(1);
-        }
 
         String buildTarget = cliArgs.getTarget();
+
+        if (cliArgs.helpMessageRequested()) {
+            printHelpMessage();
+            return;
+        }
 
         // TODO: Construct build environment, and figure out what to do if no environment exists (probably just
         // default environment, and force run __init?)
@@ -98,6 +99,37 @@ public class Main {
         }
 
         return null;
+    }
+
+    /**
+     * Print a help message with a list of options that sledge understands.
+     */
+    private static void printHelpMessage() {
+        System.out.println("Usage: sledge [options] target [args...]");
+        System.out.println("Any arguments prefixed with -D are passed through to the executed sledge");
+        System.out.println("script. All others are parsed by sledge itself.");
+        System.out.println();
+        System.out.println("Where options include:");
+        System.out.println();
+        System.out.println("\t-v | --verbose");
+        System.out.println("\t\tPrint extra debugging information to help debug sledge");
+        System.out.println("\t\tscripts or the sledge parser itself.");
+        System.out.println("\t-c <hammer file> | --hammer=<hammer file>");
+        System.out.println("\t\tUse a config file at a non-standard path (not recommended)");
+        System.out.println("\t\tDefaults to ./hammer in the current directory.");
+        System.out.println("\t-h | --help");
+        System.out.println("\t\tPrints this message.");
+        System.out.println("\t-D<key>=<value>");
+        System.out.println("\t\tPasses in a key/value pair to the sledge script with the");
+        System.out.println("\t\tspecified values. If the value is defined implicitly by");
+        System.out.println("\t\tsledge, it can be overridden with this value.");
+        System.out.println();
+        System.out.println("Short options with arguments can be specified with -<o> <value>, but long");
+        System.out.println("options with arguments must be specified with --<option>=<value>.");
+        System.out.println();
+        System.out.println("For help with sledge's internal units, see the documentation online on the");
+        System.out.println("GitHub repository (https://github.com/RSC-Games/sledge.git).");
+        System.out.println();
     }
 
     private static void handleParserException(BuildEnvironment environment, ProcessingException ie) {
