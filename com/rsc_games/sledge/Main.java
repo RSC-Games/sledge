@@ -24,6 +24,7 @@ import java.io.IOException;
 import com.rsc_games.sledge.cli.ArgsParser;
 import com.rsc_games.sledge.env.BuildEnvironment;
 import com.rsc_games.sledge.lib.LogModule;
+import com.rsc_games.sledge.parser.MissingTargetException;
 import com.rsc_games.sledge.parser.ProcessingException;
 import com.rsc_games.sledge.parser.TargetTree;
 
@@ -36,7 +37,7 @@ public class Main {
 
         // Some error happened within the parser.
         if (cliArgs == null)
-            System.exit(1);
+            System.exit(2);
 
         String buildTarget = cliArgs.getTarget();
 
@@ -60,19 +61,17 @@ public class Main {
 
         // Some kind of tree processing error occurred.
         if (targetTree == null) {
-            LogModule.error("sledge", String.format("failed to process config file %s! stop.", 
+            LogModule.error("sledge", String.format("failed to process config file %s. stop.", 
                                                          buildEnvironment.getConfigFilePath()));
-            System.exit(1);
+            System.exit(3);
         }
 
         // Sledge can't (reliably) assume a target. Bail out.
         if (buildTarget == null) {
             LogModule.error("sledge", "no target specified. stop.");
             targetTree.listTargets();
-            System.exit(1);
+            System.exit(2);
         }
-        
-        LogModule.log("sledge", "Building target " + buildTarget);
 
         try {
             if (buildEnvironment.debuggingEnabled())
@@ -83,6 +82,19 @@ public class Main {
         catch (ProcessingException ie) {
             handleParserException(buildEnvironment, ie);
         }
+        catch (MissingTargetException ie) {
+            LogModule.error("sledge", String.format("%s: %s", ie.getMessage(), ie.getTarget()));
+            targetTree.listTargets();
+            System.exit(2);
+        }
+        catch (RuntimeException ie) {
+            LogModule.critical("sledge", "internal fatal error! printing backtrace:");
+            System.out.print("Exception in thread \"main\" ");
+            ie.printStackTrace();
+
+            LogModule.error("sledge", "fatal exception while executing target. stop.");
+            System.exit(-4096);
+        }
     }
 
     private static TargetTree loadTargetTree(BuildEnvironment buildEnvironment) {
@@ -90,9 +102,9 @@ public class Main {
             return new TargetTree(buildEnvironment.getConfigFilePath());
         }
         catch (IOException ie) {
-            LogModule.error("sledge", String.format("failed to find config file %s! stop.", 
+            LogModule.error("sledge", String.format("failed to find config file %s. stop.", 
                                                          buildEnvironment.getConfigFilePath()));
-            System.exit(1);
+            System.exit(2);
         }
         // Failed to process the unit. 
         catch (ProcessingException ie) {

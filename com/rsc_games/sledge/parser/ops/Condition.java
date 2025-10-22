@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.rsc_games.sledge.env.BuilderVars;
 import com.rsc_games.sledge.parser.CodeLine;
+import com.rsc_games.sledge.parser.ProcessingException;
 
 class Condition extends Operation {
     ArrayList<Operation> conditionalElements;
@@ -21,9 +22,16 @@ class Condition extends Operation {
      */
     public Condition(Opcode op, CodeLine previous, ArrayList<Argument> args) {
         super(op, args);
+        String conditionalType = args.get(0).stringVal__NoVarReplacement();
 
-        if (previous != null && previous.isBranch)
+        // Determine if a previous case can be linked to this.
+        if (!conditionalType.equals("if") && previous != null && previous.isBranch)
             connectedBranch = (Condition)previous.getOp();
+
+        // Ensure only legal combinations of if/else chains are permitted.
+        if (!conditionalType.equals("if") && connectedBranch == null)
+            throw new ProcessingException(lineNo,
+                String.format("processing exception: %s without if", conditionalType));
     }
 
     /**

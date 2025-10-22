@@ -54,8 +54,10 @@ class Grammar {
         conditionalLiterals.add(TokenID.TOK_COND_AND);
     }
 
-    // TODO: Have a private class variable contain a detailed error state from the below
-    // functions if they return false, and allow callers to query this.
+    /**
+     * Internal error state (triggered from a non-fatal bad line parse, and cleared
+     * on any successful parse).
+     */
     private static String errorDetails;
 
     /**

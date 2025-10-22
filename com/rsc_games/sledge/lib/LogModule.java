@@ -22,6 +22,6 @@ public class LogModule {
     }
 
     public static void critical(String unit, String message) {
-        System.out.printf("\033[31;43m%s: %s\033[0m\n", unit, message);
+        System.out.printf("\033[91;48;2;195;195;1m%s: %s\033[0m\n", unit, message);
     }
 }

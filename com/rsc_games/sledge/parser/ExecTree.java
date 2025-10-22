@@ -3,6 +3,7 @@ package com.rsc_games.sledge.parser;
 import java.util.HashMap;
 
 import com.rsc_games.sledge.env.BuilderVars;
+import com.rsc_games.sledge.lib.LogModule;
 
 import java.util.ArrayList;
 
@@ -59,7 +60,13 @@ public class ExecTree {
     }
 
     public void execTarget(BuilderVars vars, String target) {
-        targets.get(target).execute(vars);
+        ExecTreeNode targetNode = targets.get(target);
+
+        if (targetNode == null)
+            throw new MissingTargetException("unknown target", target);
+
+        LogModule.log("sledge", "building target " + target);
+        targetNode.execute(vars);
     }
 
     public void printTree(String target) {

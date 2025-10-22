@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "RunTests",
+            "request": "launch",
+            "mainClass": "RunTests",
+            "projectName": "sledge_e034ee34"
+        },
+        {
+            "type": "java",
             "name": "Main",
             "request": "launch",
             "mainClass": "com.rsc_games.sledge.Main",

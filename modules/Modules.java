@@ -4,7 +4,7 @@ import com.rsc_games.sledge.lib.LogModule;
 
 import common.Environ;
 import modules.extmod.ModuleLoader;
-import modules.jdkutil.JavaCompileSystem;
+//import modules.jdkutil.JavaCompileSystem;
 import modules.systemio.OutputDirectory;
 import modules.systemio.UpdateBuilder;
 import modules.systemio.Cleaner;
@@ -14,6 +14,7 @@ public class Modules {
 
     public static int tryRun(String name, String argString) {
         switch (name) {
+            /*
             case "loadmod": {
                 LogModule.error("module_ldr", "Unimplemented command: loadmod");
                 ModuleLoader.loadModule(argString);
@@ -75,11 +76,13 @@ public class Modules {
             case "warn": {
                 LogModule.warn("warn", argString);
                 return 0;
-            }
+            }*/
             default: {
-                LogModule.error("module_ldr", "Module " + name + ", args \"" + argString + "\" not recognized.");
-                LogModule.error("module_ldr", "Compilation Terminated.");
-                return -1;
+                //LogModule.error("module_ldr", "Module " + name + ", args \"" + argString + "\" not recognized.");
+                //LogModule.error("module_ldr", "Compilation Terminated.");
+                //return -1;
+                LogModule.warn("module_ldr", "Legacy loader system is no longer supported!");
+                return 0;
             }
         }
     }
