@@ -34,7 +34,6 @@ class VariableSet extends Operation {
      * @param vars Current variable state (to add a new variable to)
      */
     public void execute(BuilderVars vars) {
-        //System.out.println("Executing operation " + lineNo);
         vars.set(args.get(0).stringVal(vars), args.get(1).stringVal(vars));
     }
 }

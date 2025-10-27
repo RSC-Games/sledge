@@ -52,7 +52,7 @@ public class Main {
         buildEnvironment.getVars().addVars(cliArgs.getOptions());
         buildEnvironment.getVars().printArgs();
 
-            // Splash ribbon.
+        // Splash ribbon.
         LogModule.log("sledge", "sledge binary " + VersionHeader.VERSION + VersionHeader.SUFFIX);
         LogModule.log("sledge", "sledge is licensed under the Apache License Version 2.0");
 

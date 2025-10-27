@@ -34,7 +34,6 @@ class VariableAppend extends Operation {
      * @param vars Current variable state (to find the variable to modify)
      */
     public void execute(BuilderVars vars) {
-        //System.out.println("Executing operation " + lineNo);
         vars.append(args.get(0).stringVal(vars), args.get(1).stringVal(vars));
     }
 }

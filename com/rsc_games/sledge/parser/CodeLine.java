@@ -191,14 +191,6 @@ public class CodeLine {
         // character distingushing them.
         //      %internal_unit <arg> <arg>
         //      @external_unit <arg> <arg>
-
-        // // debugging
-        // System.out.println("********** CURRENT CODELINE **************");
-
-        // for (Token tok : tokList)
-        //     System.out.println(tok);
-
-        // System.out.println();
         
         // Attempt to guess the line type.
         Token firstToken = tokList.get(0);

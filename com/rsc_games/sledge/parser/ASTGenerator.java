@@ -41,6 +41,7 @@ public class ASTGenerator {
     /**
      * Show the current AST tree on screen.
      */
+    @Deprecated
     public void printTree() {
         System.out.println("################## PRINTING AST TREE ####################");
         System.out.println(builtTree.getRoot());

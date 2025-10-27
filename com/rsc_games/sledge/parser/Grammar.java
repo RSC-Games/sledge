@@ -249,6 +249,7 @@ class Grammar {
         }
         
         // TODO: still need to test actual internal condition to ensure it's legal.
+        // might be doing this in conditionliteral
         resetErrorDetails();
         return true;
     }

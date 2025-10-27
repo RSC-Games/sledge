@@ -38,7 +38,6 @@ class UnitExecutor extends Operation {
      * 
      * @param vars Current variable state (should be required for resolving args)
      */
-    // TODO: Resolve argslist.
     public void execute(BuilderVars vars) {
         String cmdline = args.get(1).stringVal(vars);
         //System.out.println("Executing operation " + lineNo);

@@ -10,6 +10,12 @@ class Condition extends Operation {
     ArrayList<Operation> conditionalElements;
     Condition connectedBranch;
 
+    /**
+     * Fully parsed, treeified, and processed version of the flattened conditional
+     * provided.
+     */
+    ConditionLiteral condition;
+
     /** 
      * Any preceeding case is guaranteed to have been executed. Therefore it's
      * going to definitively have evaluated true or false.
@@ -22,6 +28,7 @@ class Condition extends Operation {
      */
     public Condition(Opcode op, CodeLine previous, ArrayList<Argument> args) {
         super(op, args);
+        System.out.println(args);
         String conditionalType = args.get(0).stringVal__NoVarReplacement();
 
         // Determine if a previous case can be linked to this.
@@ -32,6 +39,10 @@ class Condition extends Operation {
         if (!conditionalType.equals("if") && connectedBranch == null)
             throw new ProcessingException(lineNo,
                 String.format("processing exception: %s without if", conditionalType));
+
+        // Only if/elif support arguments
+        if (conditionalType.equals("if") || conditionalType.equals("elif"))
+            this.condition = args.get(1).compileCondition();
     }
 
     /**
@@ -57,7 +68,6 @@ class Condition extends Operation {
      * @param vars (unused)
      */
     // TODO: Change execution behavior with if/elif/else chain.
-    // TODO: failed test case test_missing_paren_open
     public void execute(BuilderVars vars) {
         assert this.conditionalElements != null: "Inner operations never set for target!";
 
@@ -66,12 +76,11 @@ class Condition extends Operation {
         String condType = this.args.get(0).stringVal__NoVarReplacement();
 
         // Else only executes if the above case evaluated false.
-        // TODO: Ensure else without if/elif is assessed at parse time.
-        if (condType.equals("else") && conditionMet)
+        if ((condType.equals("else") && conditionMet) || 
+            (!condType.equals("else") && !args.get(1).evaluate(vars))) {
+            System.out.println("case skipped as prior case was satisfied");
             return;
-
-        if (!condType.equals("else") && !args.get(1).evaluate(vars))
-            return;
+        }
 
         for (Operation op : conditionalElements)
             op.execute(vars);

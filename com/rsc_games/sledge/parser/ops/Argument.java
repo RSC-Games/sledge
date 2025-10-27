@@ -40,6 +40,18 @@ public class Argument {
         return this.tokens.get(0).lno;
     }
 
+    /**
+     * Builds an immediately executable tree for a conditional statement
+     * to evaluate. Does not perform any checks to ensure the supplied
+     * argument should be translated.
+     * 
+     * @return The compiled and immediately executable conditional from
+     *  this argument.
+     */
+    public ConditionLiteral compileCondition() {
+        return new ConditionLiteral(this.tokens);
+    }
+
     
     /**
      * Processes the argument stream during execution and returns a processed 
@@ -49,6 +61,7 @@ public class Argument {
      * @return Whether the condition is true at the time it's called.
      */
     // TODO: Clunky evaluation. Replace with a functional system.
+    @Deprecated
     public boolean evaluate(BuilderVars vars) {
         // Expand all string variables for evaluation.
         this.parseVars(vars);
@@ -57,17 +70,15 @@ public class Argument {
         if (this.tokens.size() == 1) {
             Token t = this.tokens.get(0);
 
-            // TODO: Error checking later
             //if (t.tok != TokenID.TOK_STRING)
             //    throw new ProcessingException(t.lno, "expected string value"); 
 
+            System.out.println("condition value " + t.val);
             System.out.println("Condition eval: " + !t.val.equals(""));
             return !t.val.equals("");
         }
 
         // For longer conditionals a comparison of both sides will be necessary.
-        // TODO: Parse down a binary tree of boolean operators, such as &&/||/==, with operator
-        // precedence.
         else if (this.tokens.size() == 4) {
             Token lval = this.tokens.get(0);
             
@@ -79,8 +90,8 @@ public class Argument {
             return lval.val.equals(rval.val);
         }
 
-        System.out.println("Cannot evaluate longer conditions; not supported.");
-        System.out.println(tokens);
+        System.out.println("(parser) Cannot evaluate longer conditions; not supported.");
+        System.out.println("tokens list " + tokens);
         return false;
     }
 
@@ -88,7 +99,8 @@ public class Argument {
      * Replaces variables with their values at the time or evaluation.
      * Forces the $() syntax for variables.
      */
-    // TODO: what does this function do?
+    // Possibly one of the worst and ugliest classes I've ever written in my short life.
+    @Deprecated
     public void parseVars(BuilderVars vars) {
         boolean deref = false;
         boolean parenOpen = false;
@@ -139,6 +151,9 @@ public class Argument {
      */
     // TODO: Resolving variables is clunky and badly implemented. It should not concatenate
     // everything into a long string.
+    // Variable resolution should occur in this file (it's easy; just parse through the string
+    // for names and replace those names with their equivalent values. Also return a string array)
+    @Deprecated
     public String stringVal(BuilderVars vars) {
         String out = "";
         boolean deref = false;
@@ -178,6 +193,7 @@ public class Argument {
         return out;
     }
 
+    @Deprecated
     public String stringVal__NoVarReplacement() {
         String out = "";
         boolean deref = false;
@@ -188,27 +204,31 @@ public class Argument {
                 deref = true;
             }
             else if (tok.tok == TokenID.TOK_PAREN_OPEN) {
-                if (!deref) 
-                    throw new ProcessingException(tok.lno, "missing \"$\" in var resolution: (todo: process var name)");
+                if (!deref)
+                    System.out.println("shut the helly up nobody asked if there was a missing $"); 
+                    //throw new ProcessingException(tok.lno, "missing \"$\" in var resolution: (todo: process var name)");
                 
                 parenOpen = true;
             }
             else if (deref && tok.tok == TokenID.TOK_NAME) {
-                if (!parenOpen) 
-                    throw new ProcessingException(tok.lno, "missing parenthesis around var resolution");
+                if (!parenOpen)
+                    System.out.println("parser found name but is crying because no ( was found before.");
+                    //throw new ProcessingException(tok.lno, "missing parenthesis around var resolution");
 
                 out += (out.equals("") ? "" : " ") + tok.val;
             }
             else if (tok.tok == TokenID.TOK_PAREN_CLOSE) {
-                if (!deref && !parenOpen) 
-                    throw new ProcessingException(tok.lno, "expected name within $(), got (todo: process var line)");
+                if (!deref && !parenOpen)
+                    System.out.println("parser thinks there's no name within the so called var resolution");
+                    //throw new ProcessingException(tok.lno, "expected name within $(), got (todo: process var line)");
                 
                 deref = false;
                 parenOpen = false;
             }
             else {
-                if (deref || parenOpen) 
-                    throw new ProcessingException(tok.lno, "missing closing parenthesis around var resolution");
+                if (deref || parenOpen)
+                    System.out.println("some weird bug case occurred in broken, deprecated code? no waaay"); 
+                    //throw new ProcessingException(tok.lno, "missing closing parenthesis around var resolution");
                 
                 out += (out.equals("") ? "" : " ") + tok.val;
             }

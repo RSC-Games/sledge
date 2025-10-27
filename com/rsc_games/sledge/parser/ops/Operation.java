@@ -77,7 +77,6 @@ public abstract class Operation {
          * OP_TYPE_CMD: tokens required: @<cmd>
          */
         ArrayList<Argument> out = new ArrayList<Argument>();
-        //System.out.println("\nanalysing line " + line);
         
         if (line.get(0).tok == TokenID.TOK_EOF)
             return null;
@@ -122,9 +121,10 @@ public abstract class Operation {
         // We have a valid conditional
         out.add(new Argument(keyword));
 
-        // Special case for if/elif
+        // Special case for if/elif keywords. Process all parts of the conditional,
+        // including the enclosing parenthesis.
         if (line.size() > 2) {
-            ArrayList<Token> condition = parseArg(line, 2, line.size() - 2);
+            ArrayList<Token> condition = parseArg(line, 1, line.size() - 1);
             out.add(new Argument(condition));
         }
 
