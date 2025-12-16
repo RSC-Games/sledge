@@ -15,7 +15,7 @@ class UnitExecutor extends Operation {
      */
     public UnitExecutor(Opcode op, ArrayList<Argument> args) {
         super(op, args);
-        this.unitName = args.get(0).stringVal__NoVarReplacement();
+        this.unitName = args.get(0).stringValNoResolve();
     }
 
     /**

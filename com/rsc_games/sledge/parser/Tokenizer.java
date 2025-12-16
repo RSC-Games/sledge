@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+// TODO: Implement literal support.
 public class Tokenizer {
     /**
      * Contains the entire recognized tokenizer language. It's a stretch
@@ -166,6 +167,10 @@ public class Tokenizer {
             // If we hit a literal that's probably another term. Likely isn't any merge
             // to be done.
             if (candidate.tok == TokenID.TOK_STRING || candidate.tok == TokenID.TOK_NAME)
+                return null;
+
+            // Edge case: ! and ( are not mergeable and are separate entities.
+            if (candidate.tok == TokenID.TOK_PAREN_OPEN)
                 return null;
 
             // Only a few character types are mergeable.

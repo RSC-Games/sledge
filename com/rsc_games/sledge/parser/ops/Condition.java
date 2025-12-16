@@ -29,7 +29,7 @@ class Condition extends Operation {
     public Condition(Opcode op, CodeLine previous, ArrayList<Argument> args) {
         super(op, args);
         System.out.println(args);
-        String conditionalType = args.get(0).stringVal__NoVarReplacement();
+        String conditionalType = args.get(0).stringValNoResolve();
 
         // Determine if a previous case can be linked to this.
         if (!conditionalType.equals("if") && previous != null && previous.isBranch)
@@ -62,10 +62,9 @@ class Condition extends Operation {
     /**
      * Execute all operations further down in the tree.
      * Provided args in the list:
-     * args[0]: Conditional type.
-     * args[1 to n]: The conditional. 
+     * args[0]: Conditional type;
      * 
-     * @param vars (unused)
+     * @param vars Current state variables.
      */
     // TODO: Change execution behavior with if/elif/else chain.
     public void execute(BuilderVars vars) {
@@ -73,11 +72,11 @@ class Condition extends Operation {
 
         System.out.println(args + " has previous branch " + this.connectedBranch);
 
-        String condType = this.args.get(0).stringVal__NoVarReplacement();
+        String condType = this.args.get(0).stringValNoResolve();
 
         // Else only executes if the above case evaluated false.
         if ((condType.equals("else") && conditionMet) || 
-            (!condType.equals("else") && !args.get(1).evaluate(vars))) {
+            (!condType.equals("else") && !condition.evaluate(vars))) {
             System.out.println("case skipped as prior case was satisfied");
             return;
         }

@@ -8,13 +8,14 @@ import java.util.HashSet;
  * This enables better, more accurate error reporting and less internal
  * confusion while parsing.
  */
-class Grammar {
+public class Grammar {
     public static final HashSet<String> reservedWords;
     public static final HashSet<String> reservedConditions;
 
     public static final HashSet<TokenID> whitespace;
     public static final HashSet<TokenID> mergeables;
     public static final HashSet<TokenID> conditionalLiterals;
+    public static final HashSet<TokenID> comparisonLiterals;
 
     static {
         reservedWords = new HashSet<String>();
@@ -43,6 +44,7 @@ class Grammar {
         mergeables.add(TokenID.TOK_COND_NOT);
 
         // Conditional literals (like !=, ==, etc)
+        comparisonLiterals = new HashSet<TokenID>();
         conditionalLiterals = new HashSet<TokenID>();
         conditionalLiterals.add(TokenID.TOK_COND_LESS_THAN);
         conditionalLiterals.add(TokenID.TOK_COND_LESS_THAN_OR_EQUAL);
@@ -50,8 +52,11 @@ class Grammar {
         conditionalLiterals.add(TokenID.TOK_COND_GREATER_THAN_OR_EQUAL);
         conditionalLiterals.add(TokenID.TOK_COND_EQUIVALENT);
         conditionalLiterals.add(TokenID.TOK_COND_NOT_EQUIVALENT);
+
+        comparisonLiterals.addAll(conditionalLiterals);
         conditionalLiterals.add(TokenID.TOK_COND_OR);
         conditionalLiterals.add(TokenID.TOK_COND_AND);
+        conditionalLiterals.add(TokenID.TOK_COND_NOT);
     }
 
     /**

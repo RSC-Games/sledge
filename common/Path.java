@@ -1,11 +1,11 @@
 package common;
 
-import java.nio.*;
+//import java.nio.*;
 import java.nio.file.*;
 import java.io.*;
 import java.util.ArrayList;
 
-// TODO: Use java nio to do this.
+// Use java nio to do this.
 @Deprecated
 public class Path {
     String p;

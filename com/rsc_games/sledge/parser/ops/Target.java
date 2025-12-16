@@ -14,7 +14,7 @@ class Target extends Operation {
      */
     public Target(Opcode op, ArrayList<Argument> args) {
         super(op, args);
-        this.name = args.get(0).stringVal__NoVarReplacement();
+        this.name = args.get(0).stringValNoResolve();
     }
     
     /**

@@ -16,21 +16,16 @@
             "name": "Main",
             "request": "launch",
             "mainClass": "com.rsc_games.sledge.Main",
-            "projectName": "sledge_e034ee34"
+            "projectName": "sledge_e034ee34",
+            "vmArgs": "-enableassertions",
+            "args": " --verbose compile"
         },
         {
             "type": "java",
             "name": "Current File",
             "request": "launch",
-            "mainClass": "${file}"
+            "mainClass": "${file}",
+            "args": "--verbose"
         },
-        {
-            "type": "java",
-            "name": "Main",
-            "request": "launch",
-            "mainClass": "com.rsc_games.sledge.Main",
-            "projectName": "sledge_386cc54c",
-            "args": "-DSLEDGE_DEBUG=1 compile"
-        }
     ]
 }

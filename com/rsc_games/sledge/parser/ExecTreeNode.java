@@ -14,7 +14,7 @@ public class ExecTreeNode {
         if (base.op != Opcode.OP_TYPE_TARGET)
             throw new ProcessingException(base.getLineNumber(), "processing error: expected target type for tree root, got " + base.op);
 
-        name = base.getArgument(0).stringVal__NoVarReplacement();
+        name = base.getArgument(0).stringValNoResolve();
         operations = new ArrayList<Operation>();
     }
     

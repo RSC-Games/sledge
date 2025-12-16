@@ -15,7 +15,7 @@ class ExternalCmd extends Operation {
      */
     public ExternalCmd(Opcode op, ArrayList<Argument> args) {
         super(op, args);
-        this.cmd = args.get(0).stringVal__NoVarReplacement();
+        this.cmd = args.get(0).stringValNoResolve();
     }
 
     /**

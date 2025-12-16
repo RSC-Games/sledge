@@ -3,7 +3,6 @@ package com.rsc_games.sledge.env;
 import java.util.HashMap;
 
 import com.rsc_games.sledge.VersionHeader;
-import com.rsc_games.sledge.lib.LogModule;
 
 public class BuilderVars {
     /**
@@ -33,21 +32,21 @@ public class BuilderVars {
      * Provide a predictable os name for each platform, since its value
      * in the os.name environment var will vary by the OS version.
      * 
-     * @return The predictable OS name, like win, linux, or macos.
+     * @return The predictable OS name, like windows, linux, or macos.
      */
-    // TODO: Add support for MacOS.
     private static String getOSType() {
         String os = System.getProperty("os.name");
 
         switch (os) {
             case "Windows 11":
-                return "win";
+                return "windows";
             case "Windows 10":
-                return "win";
+                return "windows";
             case "Linux":
                 return "linux";
+            case "posix": // Internet says os.name env var is this for Mac OS
+                return "macos";
             default:
-                LogModule.warn("sledge", "MacOS is not currently supported!");
                 throw new UnsupportedOperationException("Cannot identify OS " + os);
         }
     }
